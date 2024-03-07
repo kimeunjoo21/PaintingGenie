@@ -11,6 +11,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
+//게임 플레이 스태틱 인클루드
+#include "Kismet/GameplayStatics.h"
+//#include "NetPlayerAnimInstance.h"
+
+
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -50,8 +55,11 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	// 총이 붙을 컴포넌트 만들자
+	compGun = CreateDefaultSubobject<USceneComponent>(TEXT("GUN"));
+	compGun->SetupAttachment(GetMesh(), FName(TEXT("GunPosition")));
+	compGun->SetRelativeLocation(FVector(-7.144f, 3.68f, 4.136f));
+	compGun->SetRelativeRotation(FRotator(3.4f, 75.699f, 6.6424f));
 }
 
 void APaintingGenieCharacter::BeginPlay()
@@ -67,6 +75,21 @@ void APaintingGenieCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	// 1. 바닥에 깔려있는 Pistol 을 찾자.
+	//액터를 배역로 하고 변수에 저장.
+	TArray<AActor*> allActor;
+	//게임 플레이 스태틱을 인클루드
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), allActor);
+	for (int32 i = 0; i < allActor.Num(); i++)
+	{
+		if (allActor[i]->GetActorLabel().Contains(TEXT("Pistol")))
+		{
+			allPistol.Add(allActor[i]);
+		}
+	}
+
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -86,6 +109,11 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::Look);
+
+		// 헤더에서 선언한 TakePistolAction을 바인드하자.
+		//총잡기
+		EnhancedInputComponent->BindAction(TakePistolAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::TakePistol);
+
 	}
 	else
 	{
@@ -127,4 +155,77 @@ void APaintingGenieCharacter::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void APaintingGenieCharacter::TakePistol()
+{
+	// 만약에 총을 들고 있다면
+	if (closestPistol)
+	{
+		//총을 손에서 때자
+		DetachPistol();
+		//피스톨 상태를 null로
+		closestPistol = nullptr;
+		//리턴
+		return;
+	}
+
+	//총과의 거리를 최대값까지 넣는다.
+	// 총을 들고 있지 않다면
+	float closestDist = std::numeric_limits<float>::max();
+	closestPistol = nullptr;
+
+	for (int32 i = 0; i < allPistol.Num(); i++)
+	{
+		// 1. 모든 Pistold 에서 나와의 거리를 구하자.
+		//현재 나의 위치와 N번째 모든 피스톨의 위치를 변수에 저장하자.
+		float dist = FVector::Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
+
+		// 내가 집을 수 있는 범위에 있니?
+		if (dist > takeGunDist) continue;
+
+		// closestDist 보다 dist 작니?
+		if (closestDist > dist)
+		{
+			// closestDist 를 dist 로 갱신
+			closestDist = dist;
+			// closestPistol 를 allPistol[i] 로 갱신
+			closestPistol = allPistol[i];
+		}
+	}
+
+	AttachPistol();
+
+
+}
+
+void APaintingGenieCharacter::AttachPistol()
+{
+	// 가까운 총이 없으면 함수를 나가자
+	if (closestPistol == nullptr) return;
+
+	// 물리적인 현상 Off 시켜주자
+	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh->SetSimulatePhysics(false);
+
+	// 가장 가까운 총을  Mesh -> GunPosition 소켓에 붙이자.
+	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+	// animInstance 에 있는 hasPistol 을 true
+	/*auto anim = Cast<UNetPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	anim->hasPistol = true;*/
+
+
+}
+
+void APaintingGenieCharacter::DetachPistol()
+{
+	// 물리적인 현상 On 시켜주자
+	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh->SetSimulatePhysics(true);
+	// closestPistol 을 compGun 떨어져 나가자
+	closestPistol->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+	// animInstance 에 있는 hasPistol 을 false
+	/*auto anim = Cast<UNetPlayerAnimInstance>(GetMesh()->GetAnimInstance());
+	anim->hasPistol = false;*/
 }

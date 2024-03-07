@@ -44,6 +44,10 @@ class APaintingGenieCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	//√—¿Œ«≤¿ª √ﬂ∞°«œ¿⁄
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TakePistolAction;
+
 public:
 	APaintingGenieCharacter();
 	
@@ -56,6 +60,9 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 			
+	void TakePistol();
+	void AttachPistol();
+	void DetachPistol();
 
 protected:
 	// APawn interface
@@ -69,5 +76,19 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+public:
+	UPROPERTY(EditAnywhere)
+	class USceneComponent* compGun;
+	
+	UPROPERTY(VisibleInstanceOnly)
+	TArray<class AActor*> allPistol;
+
+	UPROPERTY(EditAnywhere)
+	float takeGunDist = 200;
+
+	UPROPERTY()
+	AActor* closestPistol;
+
 };
 
