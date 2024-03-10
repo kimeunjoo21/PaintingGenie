@@ -3,3 +3,7 @@
 
 #include "PaintingWidget.h"
 
+void UPaintingWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}

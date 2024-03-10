@@ -14,4 +14,7 @@ class PAINTINGGENIE_API UMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
+public:
+	// BeginPlay 와 같은 기능의 함수
+	virtual void NativeConstruct() override;
 };

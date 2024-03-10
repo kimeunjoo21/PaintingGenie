@@ -3,3 +3,7 @@
 
 #include "MenuWidget.h"
 
+void UMenuWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}

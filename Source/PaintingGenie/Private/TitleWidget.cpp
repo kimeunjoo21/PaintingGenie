@@ -3,3 +3,7 @@
 
 #include "TitleWidget.h"
 
+void UTitleWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}

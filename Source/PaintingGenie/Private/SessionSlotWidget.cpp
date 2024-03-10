@@ -3,3 +3,7 @@
 
 #include "SessionSlotWidget.h"
 
+void USessionSlotWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+}
