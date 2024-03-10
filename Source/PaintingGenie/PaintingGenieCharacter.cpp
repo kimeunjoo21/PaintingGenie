@@ -13,7 +13,10 @@
 
 //게임 플레이 스태틱 인클루드
 #include "Kismet/GameplayStatics.h"
-//#include "NetPlayerAnimInstance.h"
+//애님 인스턴스 인클루드
+#include "P4AnimInstance.h"
+//씬 컴포넌트
+#include "Runtime/Engine/Classes/Components/SceneComponent.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -76,16 +79,23 @@ void APaintingGenieCharacter::BeginPlay()
 		}
 	}
 
+	// AnimInstance 가져오자
+	anim = Cast<UP4AnimInstance>(GetMesh()->GetAnimInstance());
+
 	// 1. 바닥에 깔려있는 Pistol 을 찾자.
 	//액터를 배역로 하고 변수에 저장.
 	TArray<AActor*> allActor;
 	//게임 플레이 스태틱을 인클루드
+	//월드에 배치된 모든 클래중에서 피스톨이라는 이름을 찾아서 배열에 넣자.
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), allActor);
 	for (int32 i = 0; i < allActor.Num(); i++)
 	{
+		//액터의 라벨이 피스톨이라면
 		if (allActor[i]->GetActorLabel().Contains(TEXT("Pistol")))
 		{
 			allPistol.Add(allActor[i]);
+			UE_LOG(LogTemp, Warning, TEXT("allpistrol"));
+
 		}
 	}
 
@@ -113,6 +123,10 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// 헤더에서 선언한 TakePistolAction을 바인드하자.
 		//총잡기
 		EnhancedInputComponent->BindAction(TakePistolAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::TakePistol);
+
+		// 헤더에서 선언한 FireAction을 바인드하자.
+		// 총 쏘기
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::Fire);
 
 	}
 	else
@@ -170,16 +184,18 @@ void APaintingGenieCharacter::TakePistol()
 		return;
 	}
 
-	//총과의 거리를 최대값까지 넣는다.
+	
 	// 총을 들고 있지 않다면
+	//총과의 거리를 최대값까지 넣는다.
 	float closestDist = std::numeric_limits<float>::max();
 	closestPistol = nullptr;
 
+	//배열 i는 올피스톨
 	for (int32 i = 0; i < allPistol.Num(); i++)
 	{
 		// 1. 모든 Pistold 에서 나와의 거리를 구하자.
 		//현재 나의 위치와 N번째 모든 피스톨의 위치를 변수에 저장하자.
-		float dist = FVector::Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
+		float dist = FVector::	Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
 
 		// 내가 집을 수 있는 범위에 있니?
 		if (dist > takeGunDist) continue;
@@ -203,6 +219,7 @@ void APaintingGenieCharacter::AttachPistol()
 {
 	// 가까운 총이 없으면 함수를 나가자
 	if (closestPistol == nullptr) return;
+	UE_LOG(LogTemp, Warning, TEXT("find pistol"));
 
 	// 물리적인 현상 Off 시켜주자
 	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
@@ -212,8 +229,17 @@ void APaintingGenieCharacter::AttachPistol()
 	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
 	// animInstance 에 있는 hasPistol 을 true
-	/*auto anim = Cast<UNetPlayerAnimInstance>(GetMesh()->GetAnimInstance());
-	anim->hasPistol = true;*/
+	anim = Cast<UP4AnimInstance>(GetMesh()->GetAnimInstance());
+	anim->hasPistol = true;
+
+	//총을 붙이면 화면을 확대 해주자.
+	// bOrientRotaionToMovement 꺼주자
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	// RotationYaw 켜주자
+	bUseControllerRotationYaw = true;
+	// SprintArm 위치 바꿔주자
+	CameraBoom->TargetArmLength = 100;
+	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
 
 
 }
@@ -226,6 +252,60 @@ void APaintingGenieCharacter::DetachPistol()
 	// closestPistol 을 compGun 떨어져 나가자
 	closestPistol->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 	// animInstance 에 있는 hasPistol 을 false
-	/*auto anim = Cast<UNetPlayerAnimInstance>(GetMesh()->GetAnimInstance());
-	anim->hasPistol = false;*/
+	anim = Cast<UP4AnimInstance>(GetMesh()->GetAnimInstance());
+	anim->hasPistol = false;
+
+	//카메라 언줌
+	// bOrientRotaionToMovement 켜주자
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	// RotationYaw 꺼주자
+	bUseControllerRotationYaw = false;
+	// SprintArm 위치 바꿔주자
+	CameraBoom->TargetArmLength = 400;
+	CameraBoom->SetRelativeLocation(FVector::ZeroVector);
+
+}
+
+void APaintingGenieCharacter::Fire()
+{
+	// 총을 들고 있지 않으면 함수를 나가자
+// 총알이 0개면 함수를 나가자
+// 재장전 중에는 함수를 나가자
+	//if (closestPistol == nullptr || currBulletCnt <= 0 || isReloading) return;
+	
+	//피스톨이 없으면 리턴
+	if (closestPistol == nullptr)return;
+	{
+	FHitResult hitInfo;
+	FVector startPos = FollowCamera->GetComponentLocation();
+	FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+	if (isHit)
+	{
+		
+		
+		
+		//스폰 데칼의 매개변수
+		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
+		
+		
+		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
+	
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(),pistolPaint, FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
+		
+		UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
+		
+		//충돌시 폭발 효과 주자.
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+	}
+
+	// 총 쏘는 애니메이션 실행
+	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
+	
+	
+	
+	}
+
 }

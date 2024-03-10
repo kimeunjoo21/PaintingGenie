@@ -44,9 +44,12 @@ class APaintingGenieCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	//총인풋을 추가하자
+	//총잡기 인풋을 추가하자
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* TakePistolAction;
+	//총 쏘기 인풋
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* FireAction;
 
 public:
 	APaintingGenieCharacter();
@@ -60,9 +63,16 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 			
+	//총을 잡자
 	void TakePistol();
+	//총을 소켓에 붙이자
 	void AttachPistol();
+	//총을 때자
 	void DetachPistol();
+
+public:
+	//총을쏘자
+	void Fire();
 
 protected:
 	// APawn interface
@@ -78,17 +88,30 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 public:
-	UPROPERTY(EditAnywhere)
+	//애님 인스턴트를 가져오자.
+	UPROPERTY()
+	class UP4AnimInstance* anim;
+	
+	//총을 붙일 컴포넌트 추가하자.
+	UPROPERTY(EditAnywhere, Category = "MySettings|Components")
 	class USceneComponent* compGun;
 	
+	//액터클래스를 배열로 선언하자.
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<class AActor*> allPistol;
 
+	//총과의 거리
 	UPROPERTY(EditAnywhere)
 	float takeGunDist = 200;
 
 	UPROPERTY()
 	AActor* closestPistol;
+
+	UPROPERTY(EditAnywhere)
+	class UParticleSystem* pistolEffect;
+
+	UPROPERTY(EditAnywhere)
+	class UMaterialInterface* pistolPaint;
 
 };
 
