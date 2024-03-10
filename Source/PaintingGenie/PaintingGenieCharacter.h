@@ -51,6 +51,10 @@ class APaintingGenieCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* FireAction;
 
+	//총알색 바꾸기
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ChangeBullet;
+
 public:
 	APaintingGenieCharacter();
 	
@@ -73,6 +77,16 @@ protected:
 public:
 	//총을쏘자
 	void Fire();
+	//	색깔을 설정하자
+	void SetBulletColor();
+	//색을 바꾸자
+	void ChangeBulletColor();
+	/*UPROPERTY()
+	class UMaterial* tempRed;*/
+	/*UPROPERTY()
+	class UMaterial* tempBlue;*/
+
+
 
 protected:
 	// APawn interface
@@ -110,8 +124,14 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* pistolEffect;
 
+	/*UPROPERTY(EditAnywhere)
+	class UMaterialInterface* pistolPaint;*/
+
 	UPROPERTY(EditAnywhere)
 	class UMaterialInterface* pistolPaint;
+
+	/*class APaintingGenieCharacter* player;*/
+
 
 };
 
