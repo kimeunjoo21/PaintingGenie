@@ -17,6 +17,8 @@
 #include "P4AnimInstance.h"
 //씬 컴포넌트
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
+//머티리얼 인클루드
+//#include "Runtime/Engine/Classes/Materials/Material.h"
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -63,6 +65,14 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	compGun->SetupAttachment(GetMesh(), FName(TEXT("GunPosition")));
 	compGun->SetRelativeLocation(FVector(-7.144f, 3.68f, 4.136f));
 	compGun->SetRelativeRotation(FRotator(3.4f, 75.699f, 6.6424f));
+
+	//총알 색깔을 정하자
+	SetBulletColor();
+
+
+
+
+
 }
 
 void APaintingGenieCharacter::BeginPlay()
@@ -94,12 +104,12 @@ void APaintingGenieCharacter::BeginPlay()
 		if (allActor[i]->GetActorLabel().Contains(TEXT("Pistol")))
 		{
 			allPistol.Add(allActor[i]);
-			UE_LOG(LogTemp, Warning, TEXT("allpistrol"));
+			//UE_LOG(LogTemp, Warning, TEXT("allpistrol"));
 
 		}
 	}
 
-
+	
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -125,8 +135,17 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(TakePistolAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::TakePistol);
 
 		// 헤더에서 선언한 FireAction을 바인드하자.
-		// 총 쏘기
+		// 총 쏘기 단발
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::Fire);
+		//총쏘기 연발
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::Fire);
+		//불릿색깔 이전 바꾸기
+		EnhancedInputComponent->BindAction(afterBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::afterBulletColor);
+		UE_LOG(LogTemp, Warning, TEXT("afterBulletColor"));
+		//불릿색깔 이전 바꾸기
+		EnhancedInputComponent->BindAction(beforeBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::beforeBulletColor);
+		UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
+
 
 	}
 	else
@@ -287,15 +306,15 @@ void APaintingGenieCharacter::Fire()
 		
 		
 		
-		//스폰 데칼의 매개변수
+		//스폰 데칼의 어테치의 매개변수
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
-		
 		
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
 	
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(),pistolPaint, FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
+		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
 		
-		UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
+		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 		
 		//충돌시 폭발 효과 주자.
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
@@ -308,4 +327,54 @@ void APaintingGenieCharacter::Fire()
 	
 	}
 
+}
+
+void APaintingGenieCharacter::SetBulletColor()
+{
+	//Script/Engine.Material'/Game/BluePrint/re/circle/M_REDCC.M_REDCC
+	//생성자에서만 가능하기 때문에 총알을 배열로 넣어서 하자.
+	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempRed.Object);
+
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempBlue.Object);
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempGreen.Object);
+	}
+
+
+	
+	
+}
+
+void APaintingGenieCharacter::afterBulletColor()
+{	
+	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
+	pbn = (pbn + 1) % (int32)EPaintColor::COUNT; 
+
+	
+	
+
+}
+
+void APaintingGenieCharacter::beforeBulletColor()
+{
+	//pbn -1을 하면 카운트의 나머지를 값으로 받는다.
+	pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
 }
