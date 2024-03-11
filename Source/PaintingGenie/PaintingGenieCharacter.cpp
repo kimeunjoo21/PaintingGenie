@@ -17,6 +17,7 @@
 #include "P4AnimInstance.h"
 //씬 컴포넌트
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
+#include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
 //머티리얼 인클루드
 //#include "Runtime/Engine/Classes/Materials/Material.h"
 
@@ -310,10 +311,16 @@ void APaintingGenieCharacter::Fire()
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
 		
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-	
 		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
+		//->SetSortOrder(order);
+		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
+		// order++; 오더를 누적합니다.  
+
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
+		order++;
+
 		
+
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 		
 		//충돌시 폭발 효과 주자.
@@ -344,7 +351,7 @@ void APaintingGenieCharacter::SetBulletColor()
 
 	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
 
-	if (tempRed.Succeeded())
+	if (tempBlue.Succeeded())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
 		pistolpaintArray.Add(tempBlue.Object);
@@ -352,7 +359,7 @@ void APaintingGenieCharacter::SetBulletColor()
 
 	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
 
-	if (tempRed.Succeeded())
+	if (tempGreen.Succeeded())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
 		pistolpaintArray.Add(tempGreen.Object);
