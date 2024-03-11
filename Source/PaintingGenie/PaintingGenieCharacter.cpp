@@ -68,6 +68,11 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 
 	//총알 색깔을 정하자
 	SetBulletColor();
+
+
+
+
+
 }
 
 void APaintingGenieCharacter::BeginPlay()
@@ -134,9 +139,13 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::Fire);
 		//총쏘기 연발
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::Fire);
-		//불릿색깔 바꾸기
-		EnhancedInputComponent->BindAction(ChangeBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::ChangeBulletColor);
-		UE_LOG(LogTemp, Warning, TEXT("ChangeBulletColor"));
+		//불릿색깔 이전 바꾸기
+		EnhancedInputComponent->BindAction(afterBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::afterBulletColor);
+		UE_LOG(LogTemp, Warning, TEXT("afterBulletColor"));
+		//불릿색깔 이전 바꾸기
+		EnhancedInputComponent->BindAction(beforeBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::beforeBulletColor);
+		UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
+
 
 	}
 	else
@@ -303,7 +312,7 @@ void APaintingGenieCharacter::Fire()
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
 	
 		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(),pistolPaint, FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
 		
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 		
@@ -322,23 +331,50 @@ void APaintingGenieCharacter::Fire()
 
 void APaintingGenieCharacter::SetBulletColor()
 {
-	///Script/Engine.Material'/Game/BluePrint/re/circle/M_REDCC.M_REDCC
+	//Script/Engine.Material'/Game/BluePrint/re/circle/M_REDCC.M_REDCC
+	//생성자에서만 가능하기 때문에 총알을 배열로 넣어서 하자.
 	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
+
 	if (tempRed.Succeeded())
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("M_RED"));
-		pistolPaint = tempRed.Object;
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempRed.Object);
+
 	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempBlue.Object);
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempGreen.Object);
+	}
+
+
+	
+	
+}
+
+void APaintingGenieCharacter::afterBulletColor()
+{	
+	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
+	pbn = (pbn + 1) % (int32)EPaintColor::COUNT; 
+
+	
+	
 
 }
 
-void APaintingGenieCharacter::ChangeBulletColor()
+void APaintingGenieCharacter::beforeBulletColor()
 {
-	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
-		if (tempBlue.Succeeded())
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("M_Blue"));
-			pistolPaint = tempBlue.Object;
-		}
-	
+	//pbn -1을 하면 카운트의 나머지를 값으로 받는다.
+	pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
 }

@@ -7,6 +7,17 @@
 #include "Logging/LogMacros.h"
 #include "PaintingGenieCharacter.generated.h"
 
+
+//페인트 컬러를 이넘 클랙스로 정의하고 새로운 머티리얼이 추가 될때마다 다음차순으로 넣어준다.
+//기본 RGB 컬러 적용됨.
+enum class EPaintColor : uint8 
+{
+	RED,
+	BLUE,
+	GREEN,
+	COUNT
+};
+
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -51,9 +62,14 @@ class APaintingGenieCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* FireAction;
 
-	//총알색 바꾸기
+	//다음 총알색 바꾸기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* ChangeBullet;
+	UInputAction* afterBullet;
+	//이전 총알색 바꾸기
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* beforeBullet;
+
+
 
 public:
 	APaintingGenieCharacter();
@@ -79,12 +95,12 @@ public:
 	void Fire();
 	//	색깔을 설정하자
 	void SetBulletColor();
-	//색을 바꾸자
-	void ChangeBulletColor();
-	/*UPROPERTY()
-	class UMaterial* tempRed;*/
-	/*UPROPERTY()
-	class UMaterial* tempBlue;*/
+	//다음 색깔로 바꾸자
+	void afterBulletColor();
+	//색 배열변수
+	int32 pbn = 0;
+	//이전 색깔로 바꾸자
+	void beforeBulletColor();
 
 
 
@@ -124,13 +140,16 @@ public:
 	UPROPERTY(EditAnywhere)
 	class UParticleSystem* pistolEffect;
 
-	/*UPROPERTY(EditAnywhere)
-	class UMaterialInterface* pistolPaint;*/
-
+	//피스톨 페인트 테스트
 	UPROPERTY(EditAnywhere)
 	class UMaterialInterface* pistolPaint;
 
-	/*class APaintingGenieCharacter* player;*/
+	//페인트를 배열로 지정하자.
+	UPROPERTY(EditAnywhere)
+	TArray<class UMaterialInterface*> pistolpaintArray;
+
+	
+	
 
 
 };
