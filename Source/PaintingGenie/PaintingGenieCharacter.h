@@ -114,7 +114,7 @@ public:
 	void beforeBulletColor();
 	//불렛 스케일을 키울수 있을까?
 	UPROPERTY(EditAnywhere)
-	FVector BSC = FVector(50);
+	FVector BSC = FVector(20);
 	void bulletScaleUp();
 
 	void bulletScaleDown();

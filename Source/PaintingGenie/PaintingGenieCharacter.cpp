@@ -149,11 +149,13 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		
 		//불렛의 크기 바꾸기
 		EnhancedInputComponent->BindAction(bulletScaleUpValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleUp);
-		UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
+		EnhancedInputComponent->BindAction(bulletScaleUpValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleUp);
+		UE_LOG(LogTemp, Warning, TEXT("bulletScaleUpValue"));
 		
 		//불렛의 크기 바꾸기
 		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleDown);
-		UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
+		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleDown);
+		UE_LOG(LogTemp, Warning, TEXT("bulletScaleDownValue"));
 
 
 
@@ -316,29 +318,19 @@ void APaintingGenieCharacter::Fire()
 	
 	if (isHit)
 	{
-		//bsc = decalsize FVector(50)
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
-		order++;
-		
-		
 		//스폰 데칼의 어테치의 매개변수
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
-		
-		
-
-
-		
 		
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
 		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
 		//->SetSortOrder(order);
 		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
 		// order++; 오더를 누적합니다.  
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
+
+		//bsc = decalsize FVector(50)
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
 		order++;
-
 		
-
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 		
 		//충돌시 폭발 효과 주자.
@@ -403,9 +395,11 @@ void APaintingGenieCharacter::beforeBulletColor()
 void APaintingGenieCharacter::bulletScaleUp()
 {
 	BSC = BSC + 1;
+	UE_LOG(LogTemp, Warning, TEXT("BSC UP :: %s"), *BSC.ToString());
 }
 
 void APaintingGenieCharacter::bulletScaleDown()
 {
 	BSC = BSC - 1;
+	UE_LOG(LogTemp, Warning, TEXT("BSC DOWN :: %s"), *BSC.ToString());
 }
