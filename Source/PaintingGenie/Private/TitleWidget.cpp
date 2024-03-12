@@ -41,6 +41,7 @@ void UTitleWidget::ShowTitleWidget()
 void UTitleWidget::StartSingleModeGame()
 {
 	UGameplayStatics::OpenLevel(GetWorld(),"ThirdPersonMap");
+	//titleWidgetUI->SetVisibility(false);
 }
 
 void UTitleWidget::QuitGame()
