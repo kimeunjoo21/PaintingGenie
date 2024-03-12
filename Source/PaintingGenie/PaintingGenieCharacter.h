@@ -69,6 +69,14 @@ class APaintingGenieCharacter : public ACharacter
 	//이전 총알색 바꾸기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* beforeBullet;
+	//머티리얼의 크기를 바꾸자.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* bulletScaleUpValue;
+	//머티리얼의 크기를 바꾸자.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* bulletScaleDownValue;
+
+
 
 
 
@@ -104,6 +112,13 @@ public:
 	int32 order = 0;
 	//이전 색깔로 바꾸자
 	void beforeBulletColor();
+	//불렛 스케일을 키울수 있을까?
+	UPROPERTY(EditAnywhere)
+	FVector BSC = FVector(50);
+	void bulletScaleUp();
+
+	void bulletScaleDown();
+
 
 
 
