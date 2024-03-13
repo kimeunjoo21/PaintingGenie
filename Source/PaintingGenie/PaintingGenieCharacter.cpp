@@ -416,6 +416,9 @@ void APaintingGenieCharacter::bulletScaleUp()
 
 void APaintingGenieCharacter::bulletScaleDown()
 {
+	if (BSC.Length() <= 0) return;
 	BSC = BSC - 1;
+	
+	
 	UE_LOG(LogTemp, Warning, TEXT("BSC DOWN :: %s"), *BSC.ToString());
 }
