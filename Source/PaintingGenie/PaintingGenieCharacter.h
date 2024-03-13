@@ -10,6 +10,7 @@
 
 //페인트 컬러를 이넘 클랙스로 정의하고 새로운 머티리얼이 추가 될때마다 다음차순으로 넣어준다.
 //기본 RGB 컬러 적용됨.
+UENUM(BlueprintType)
 enum class EPaintColor : uint8 
 {	
 	RED,
@@ -108,6 +109,7 @@ public:
 	void afterBulletColor();
 	//색 배열변수
 	int32 pbn = 0;
+	//TArray<class UMaterialInterface> pbn;
 	//오더 차상위를 지정합니다.
 	int32 order = 0;
 	//이전 색깔로 바꾸자
@@ -116,7 +118,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	FVector BSC = FVector(20);
 	void bulletScaleUp();
-
 	void bulletScaleDown();
 
 

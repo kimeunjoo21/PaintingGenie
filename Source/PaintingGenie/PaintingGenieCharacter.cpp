@@ -383,17 +383,33 @@ void APaintingGenieCharacter::SetBulletColor()
 void APaintingGenieCharacter::afterBulletColor()
 {	
 	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
-	pbn = (pbn + 1) % (int32)EPaintColor::COUNT; 
+	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
+	pbn = pbn + 1;
+	
+	if (pbn > pistolpaintArray.Num() - 1) 
+	{	
+		pbn = 0;
+	}
+
+	
 }
 
 void APaintingGenieCharacter::beforeBulletColor()
 {
 	//pbn -1을 하면 카운트의 나머지를 값으로 받는다.
-	pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
+	//pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
+	pbn = pbn - 1;
+
+	if (pbn < 0)
+	{
+		pbn = pistolpaintArray.Num()-1;
+	}
+
 }
 
 void APaintingGenieCharacter::bulletScaleUp()
 {
+	//BulletScaleChange
 	BSC = BSC + 1;
 	UE_LOG(LogTemp, Warning, TEXT("BSC UP :: %s"), *BSC.ToString());
 }
