@@ -116,9 +116,31 @@ public:
 	void beforeBulletColor();
 	//불렛 스케일을 키울수 있을까?
 	UPROPERTY(EditAnywhere)
+	//불렛 크기 초기 값 20
 	FVector BSC = FVector(20);
 	void bulletScaleUp();
 	void bulletScaleDown();
+	
+	//불릿 크기를 미리보기 할수 있을까?
+	//최대시야거리
+	UPROPERTY(EditAnywhere, Category="MySettings")
+	float maxSight = 1000.0f;
+	//최소크기
+	UPROPERTY(EditAnywhere, Category = "MySettings")
+	float minSize = 1.0f;
+	//최대크기 BSC와 동기화
+	UPROPERTY(EditAnywhere, Category = "MySettings")
+	float maxSize= BSC.Length();
+	//줄어드는값
+	float rate = 1.0f;
+	
+	//매쉬가 필요함.
+	UPROPERTY(VisibleAnywhere, Category = "MySettings|Components")
+	class UStaticMeshComponent* gazePointer;
+
+	//bool CheckShowObjects();
+
+
 
 
 
@@ -129,6 +151,9 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	virtual void Tick(float DeltaSeconds) override;
+
 
 public:
 	/** Returns CameraBoom subobject **/

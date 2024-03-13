@@ -70,6 +70,12 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	//총알 색깔을 정하자
 	SetBulletColor();
 
+	gazePointer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gaze Pointer Mesh"));
+	gazePointer->SetupAttachment(RootComponent);
+	gazePointer->SetWorldScale3D(FVector(0.1f));
+	gazePointer->SetWorldLocation(FVector(300, 0, 0));
+	gazePointer->SetWorldRotation(FRotator(90, 0, 0));
+	gazePointer->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 
 
@@ -111,6 +117,43 @@ void APaintingGenieCharacter::BeginPlay()
 	}
 
 	
+}
+
+void APaintingGenieCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	//총을 잡았니?
+	if (closestPistol)
+	{	
+		FHitResult hitInfo;
+		FVector startPos = FollowCamera->GetComponentLocation();
+		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+		if (isHit) 
+		{
+			gazePointer->SetVisibility(true);
+			gazePointer->SetRelativeLocation(hitInfo.Location);
+			gazePointer->SetWorldScale3D(BSC);
+
+		}
+		
+			
+		
+		
+		//FVector calcSize = FMath::Lerp(FVector(minSize), FVector(maxSize), rate);
+		//총을 잡았다면 출력
+		//UE_LOG(LogTemp, Warning,TEXT("Grab pistol"))	
+	}
+	else
+	{
+		gazePointer->SetVisibility(false);
+	}
+
+	
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -416,6 +459,7 @@ void APaintingGenieCharacter::bulletScaleUp()
 
 void APaintingGenieCharacter::bulletScaleDown()
 {
+	//만약 0보다 작거나 같으면 리턴
 	if (BSC.Length() <= 0) return;
 	BSC = BSC - 1;
 	
