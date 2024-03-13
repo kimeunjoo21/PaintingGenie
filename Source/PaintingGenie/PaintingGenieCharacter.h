@@ -123,6 +123,8 @@ public:
 	void bulletScaleDown();
 	
 	//불릿 크기를 미리보기 할수 있을까?
+	void SetGazePointer();
+	
 	//최대시야거리
 	UPROPERTY(EditAnywhere, Category="MySettings")
 	float maxSight = 1000.0f;

@@ -70,13 +70,10 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	//총알 색깔을 정하자
 	SetBulletColor();
 
-	gazePointer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gaze Pointer Mesh"));
-	gazePointer->SetupAttachment(RootComponent);
-	gazePointer->SetWorldScale3D(FVector(0.1f));
-	gazePointer->SetWorldLocation(FVector(300, 0, 0));
-	gazePointer->SetWorldRotation(FRotator(90, 0, 0));
-	gazePointer->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	//게이지 포인터를 세팅하자.
+	SetGazePointer();
 
+	
 
 
 
@@ -135,7 +132,7 @@ void APaintingGenieCharacter::Tick(float DeltaSeconds)
 		if (isHit) 
 		{
 			gazePointer->SetVisibility(true);
-			gazePointer->SetRelativeLocation(hitInfo.Location);
+			gazePointer->SetWorldLocation(hitInfo.Location);
 			gazePointer->SetWorldScale3D(BSC);
 
 		}
@@ -465,4 +462,20 @@ void APaintingGenieCharacter::bulletScaleDown()
 	
 	
 	UE_LOG(LogTemp, Warning, TEXT("BSC DOWN :: %s"), *BSC.ToString());
+}
+
+void APaintingGenieCharacter::SetGazePointer()
+{
+	gazePointer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gaze Pointer Mesh"));
+	gazePointer->SetupAttachment(RootComponent);
+	gazePointer->SetWorldScale3D(FVector(0.5f));
+	gazePointer->SetWorldLocation(FVector(300, 0, 0));
+	gazePointer->SetWorldRotation(FRotator(90, 0, 0));
+	gazePointer->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ConstructorHelpers::FObjectFinder<UStaticMesh>tempGaze(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
+	if (tempGaze.Succeeded())
+	{
+		gazePointer->SetStaticMesh(tempGaze.Object);
+	}
+
 }
