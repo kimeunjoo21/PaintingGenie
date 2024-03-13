@@ -129,11 +129,12 @@ void APaintingGenieCharacter::Tick(float DeltaSeconds)
 		FCollisionQueryParams params;
 		params.AddIgnoredActor(this);
 		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+		
 		if (isHit) 
 		{
 			gazePointer->SetVisibility(true);
 			gazePointer->SetWorldLocation(hitInfo.Location);
-			gazePointer->SetWorldScale3D(BSC);
+			gazePointer->SetWorldScale3D(BSC*0.05f);
 
 		}
 		
@@ -468,9 +469,9 @@ void APaintingGenieCharacter::SetGazePointer()
 {
 	gazePointer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gaze Pointer Mesh"));
 	gazePointer->SetupAttachment(RootComponent);
-	gazePointer->SetWorldScale3D(FVector(0.5f));
+	gazePointer->SetWorldScale3D(FVector(0.1f));
 	gazePointer->SetWorldLocation(FVector(300, 0, 0));
-	gazePointer->SetWorldRotation(FRotator(90, 0, 0));
+	gazePointer->SetWorldRotation(FRotator(0, 90, 90));
 	gazePointer->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ConstructorHelpers::FObjectFinder<UStaticMesh>tempGaze(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
 	if (tempGaze.Succeeded())
