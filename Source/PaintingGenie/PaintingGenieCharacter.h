@@ -127,7 +127,7 @@ public:
 	
 	//최대시야거리
 	UPROPERTY(EditAnywhere, Category="MySettings")
-	float maxSight = 1000.0f;
+	float maxSight = 10000.0f;
 	//최소크기
 	UPROPERTY(EditAnywhere, Category = "MySettings")
 	float minSize = 1.0f;
@@ -136,12 +136,10 @@ public:
 	float maxSize= BSC.Length();
 	//줄어드는값
 	float rate = 1.0f;
-	
-	//매쉬가 필요함.
+	//게이지 포인터 매쉬가 필요함.
 	UPROPERTY(VisibleAnywhere, Category = "MySettings|Components")
 	class UStaticMeshComponent* gazePointer;
-
-	//bool CheckShowObjects();
+	void GazePointer();
 
 
 

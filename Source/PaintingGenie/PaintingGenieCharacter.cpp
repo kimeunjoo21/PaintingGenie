@@ -18,6 +18,7 @@
 //씬 컴포넌트
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
+#include "Runtime/Engine/Classes/Materials/Material.h"
 //머티리얼 인클루드
 //#include "Runtime/Engine/Classes/Materials/Material.h"
 
@@ -119,36 +120,8 @@ void APaintingGenieCharacter::BeginPlay()
 void APaintingGenieCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	//총을 잡았니?
-	if (closestPistol)
-	{	
-		FHitResult hitInfo;
-		FVector startPos = FollowCamera->GetComponentLocation();
-		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
-		
-		if (isHit) 
-		{
-			gazePointer->SetVisibility(true);
-			gazePointer->SetWorldLocation(hitInfo.Location);
-			gazePointer->SetWorldScale3D(BSC*0.05f);
-
-		}
-		
-			
-		
-		
-		//FVector calcSize = FMath::Lerp(FVector(minSize), FVector(maxSize), rate);
-		//총을 잡았다면 출력
-		//UE_LOG(LogTemp, Warning,TEXT("Grab pistol"))	
-	}
-	else
-	{
-		gazePointer->SetVisibility(false);
-	}
+	GazePointer();
+	
 
 	
 
@@ -477,6 +450,49 @@ void APaintingGenieCharacter::SetGazePointer()
 	if (tempGaze.Succeeded())
 	{
 		gazePointer->SetStaticMesh(tempGaze.Object);
+		//인덱스번호, 머티리얼
+		//gazePointer->SetMaterial(0, mateGaze.Object);
+	}
+	ConstructorHelpers::FObjectFinder<UMaterial>mateGaze(TEXT("/ Script / Engine.Material'/Game/BluePrint/re/gazepointer/M_GazePointer.M_GazePointer'"));
+	if (mateGaze.Succeeded())
+	{	
+		//인덱스번호, 머티리얼
+		gazePointer->SetMaterial(0, mateGaze.Object);
 	}
 
+
+
+}
+
+void APaintingGenieCharacter::GazePointer()
+{
+	//총을 잡았니?
+	if (closestPistol)
+	{
+		FHitResult hitInfo;
+		FVector startPos = FollowCamera->GetComponentLocation();
+		FVector endPos = startPos + FollowCamera->GetForwardVector() * maxSight;
+		//FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+		//FVector camForward = FRotationMatrix(FollowCamera->GetComponentRotation()).GetUnitAxis(EAxis::X);
+		//FVector endPos = startPos + camForward * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+
+		if (isHit)
+		{
+			gazePointer->SetVisibility(true);
+			gazePointer->SetWorldLocation(hitInfo.Location);
+			gazePointer->SetWorldScale3D(BSC * 0.05f);
+
+		}
+		else
+		{
+			gazePointer->SetVisibility(false);
+		}
+		//FVector calcSize = FMath::Lerp(FVector(minSize), FVector(maxSize), rate);
+		//총을 잡았다면 출력
+		//UE_LOG(LogTemp, Warning,TEXT("Grab pistol"))	
+	}
+	
 }
