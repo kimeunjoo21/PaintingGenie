@@ -108,6 +108,7 @@ public:
 	//다음 색깔로 바꾸자
 	void afterBulletColor();
 	//색 배열변수
+	UPROPERTY(BlueprintReadWrite)
 	int32 pbn = 0;
 	//TArray<class UMaterialInterface> pbn;
 	//오더 차상위를 지정합니다.
@@ -189,7 +190,7 @@ public:
 	class UMaterialInterface* pistolPaint;
 
 	//페인트를 배열로 지정하자.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<class UMaterialInterface*> pistolpaintArray;
 
 	
