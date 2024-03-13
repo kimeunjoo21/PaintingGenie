@@ -11,10 +11,11 @@
 //페인트 컬러를 이넘 클랙스로 정의하고 새로운 머티리얼이 추가 될때마다 다음차순으로 넣어준다.
 //기본 RGB 컬러 적용됨.
 enum class EPaintColor : uint8 
-{
+{	
 	RED,
 	BLUE,
 	GREEN,
+	//YELLOW,
 	COUNT
 };
 
@@ -68,6 +69,14 @@ class APaintingGenieCharacter : public ACharacter
 	//이전 총알색 바꾸기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* beforeBullet;
+	//머티리얼의 크기를 바꾸자.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* bulletScaleUpValue;
+	//머티리얼의 크기를 바꾸자.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* bulletScaleDownValue;
+
+
 
 
 
@@ -99,8 +108,17 @@ public:
 	void afterBulletColor();
 	//색 배열변수
 	int32 pbn = 0;
+	//오더 차상위를 지정합니다.
+	int32 order = 0;
 	//이전 색깔로 바꾸자
 	void beforeBulletColor();
+	//불렛 스케일을 키울수 있을까?
+	UPROPERTY(EditAnywhere)
+	FVector BSC = FVector(20);
+	void bulletScaleUp();
+
+	void bulletScaleDown();
+
 
 
 
@@ -150,7 +168,7 @@ public:
 
 	
 	
-
+	
 
 };
 

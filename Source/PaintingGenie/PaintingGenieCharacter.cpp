@@ -17,6 +17,7 @@
 #include "P4AnimInstance.h"
 //씬 컴포넌트
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
+#include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
 //머티리얼 인클루드
 //#include "Runtime/Engine/Classes/Materials/Material.h"
 
@@ -141,10 +142,21 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::Fire);
 		//불릿색깔 이전 바꾸기
 		EnhancedInputComponent->BindAction(afterBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::afterBulletColor);
-		UE_LOG(LogTemp, Warning, TEXT("afterBulletColor"));
+		//UE_LOG(LogTemp, Warning, TEXT("afterBulletColor"));
 		//불릿색깔 이전 바꾸기
 		EnhancedInputComponent->BindAction(beforeBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::beforeBulletColor);
-		UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
+		//UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
+		
+		//불렛의 크기 바꾸기
+		EnhancedInputComponent->BindAction(bulletScaleUpValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleUp);
+		EnhancedInputComponent->BindAction(bulletScaleUpValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleUp);
+		UE_LOG(LogTemp, Warning, TEXT("bulletScaleUpValue"));
+		
+		//불렛의 크기 바꾸기
+		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleDown);
+		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleDown);
+		UE_LOG(LogTemp, Warning, TEXT("bulletScaleDownValue"));
+
 
 
 	}
@@ -288,31 +300,36 @@ void APaintingGenieCharacter::DetachPistol()
 void APaintingGenieCharacter::Fire()
 {
 	// 총을 들고 있지 않으면 함수를 나가자
-// 총알이 0개면 함수를 나가자
-// 재장전 중에는 함수를 나가자
+	// 총알이 0개면 함수를 나가자
+	// 재장전 중에는 함수를 나가자
 	//if (closestPistol == nullptr || currBulletCnt <= 0 || isReloading) return;
 	
 	//피스톨이 없으면 리턴
 	if (closestPistol == nullptr)return;
 	{
+
 	FHitResult hitInfo;
 	FVector startPos = FollowCamera->GetComponentLocation();
 	FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
 	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+	
+	
 	if (isHit)
 	{
-		
-		
-		
 		//스폰 데칼의 어테치의 매개변수
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
 		
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-	
 		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(50), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0);
+		//->SetSortOrder(order);
+		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
+		// order++; 오더를 누적합니다.  
+
+		//bsc = decalsize FVector(50)
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
+		order++;
 		
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 		
@@ -344,7 +361,7 @@ void APaintingGenieCharacter::SetBulletColor()
 
 	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
 
-	if (tempRed.Succeeded())
+	if (tempBlue.Succeeded())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
 		pistolpaintArray.Add(tempBlue.Object);
@@ -352,7 +369,7 @@ void APaintingGenieCharacter::SetBulletColor()
 
 	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
 
-	if (tempRed.Succeeded())
+	if (tempGreen.Succeeded())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
 		pistolpaintArray.Add(tempGreen.Object);
@@ -367,14 +384,22 @@ void APaintingGenieCharacter::afterBulletColor()
 {	
 	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
 	pbn = (pbn + 1) % (int32)EPaintColor::COUNT; 
-
-	
-	
-
 }
 
 void APaintingGenieCharacter::beforeBulletColor()
 {
 	//pbn -1을 하면 카운트의 나머지를 값으로 받는다.
 	pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
+}
+
+void APaintingGenieCharacter::bulletScaleUp()
+{
+	BSC = BSC + 1;
+	UE_LOG(LogTemp, Warning, TEXT("BSC UP :: %s"), *BSC.ToString());
+}
+
+void APaintingGenieCharacter::bulletScaleDown()
+{
+	BSC = BSC - 1;
+	UE_LOG(LogTemp, Warning, TEXT("BSC DOWN :: %s"), *BSC.ToString());
 }
