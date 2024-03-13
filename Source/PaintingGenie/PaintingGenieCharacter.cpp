@@ -334,7 +334,7 @@ void APaintingGenieCharacter::Fire()
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 		
 		//충돌시 폭발 효과 주자.
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
 	}
 
 	// 총 쏘는 애니메이션 실행
