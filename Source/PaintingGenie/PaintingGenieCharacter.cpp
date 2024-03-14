@@ -19,6 +19,7 @@
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
 #include "Runtime/Engine/Classes/Materials/Material.h"
+#include <../../../../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraFunctionLibrary.h>
 //머티리얼 인클루드
 //#include "Runtime/Engine/Classes/Materials/Material.h"
 
@@ -355,11 +356,11 @@ void APaintingGenieCharacter::Fire()
 		order++;
 		
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
-		
+		FRotator rot = hitInfo.ImpactNormal.Rotation();
 		//충돌시 폭발 효과 주자.
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
-	}
-
+		// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, rot, FVector(1.0f), true);
+		}
 	// 총 쏘는 애니메이션 실행
 	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
 	
