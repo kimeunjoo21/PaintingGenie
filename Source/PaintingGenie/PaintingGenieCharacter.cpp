@@ -331,7 +331,14 @@ void APaintingGenieCharacter::Fire()
 	
 	
 	if (isHit)
-	{
+	{	
+		//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
+		//FVector in = hitInfo.ImpactNormal;
+		
+		//충돌결과의 노말값을 로테이션으로 형변환
+		//hitInfo.ImpactNormal.Rotation();
+		FRotator rot = hitInfo.ImpactNormal.Rotation();
+
 		//스폰 데칼의 어테치의 매개변수
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
 		
@@ -341,8 +348,10 @@ void APaintingGenieCharacter::Fire()
 		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
 		// order++; 오더를 누적합니다.  
 
+		//pbn = scale
 		//bsc = decalsize FVector(50)
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
+		//rot = hitInfo.ImpactNormal.Rotation();
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
 		order++;
 		
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
