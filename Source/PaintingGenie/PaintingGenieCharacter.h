@@ -102,13 +102,14 @@ protected:
 
 public:
 	//총을쏘자
+	UFUNCTION(BlueprintCallable)
 	void Fire();
 	//	색깔을 설정하자
 	void SetBulletColor();
 	//다음 색깔로 바꾸자
 	void afterBulletColor();
 	//색 배열변수
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 pbn = 0;
 	//TArray<class UMaterialInterface> pbn;
 	//오더 차상위를 지정합니다.
@@ -182,8 +183,11 @@ public:
 	UPROPERTY()
 	AActor* closestPistol;
 
+	//UPROPERTY(EditAnywhere)
+	//class UParticleSystem* pistolEffect;
+	
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* pistolEffect;
+	class UNiagaraSystem* pistolEffect;
 
 	//피스톨 페인트 테스트
 	UPROPERTY(EditAnywhere)
