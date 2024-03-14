@@ -483,7 +483,8 @@ void APaintingGenieCharacter::GazePointer()
 		if (isHit)
 		{
 			gazePointer->SetVisibility(true);
-			gazePointer->SetWorldLocation(hitInfo.Location);
+			gazePointer->SetWorldLocation(hitInfo.Location - 50*GetActorForwardVector());
+			gazePointer->SetWorldRotation(hitInfo.ImpactNormal.Rotation() + FRotator(90,0,180));
 			gazePointer->SetWorldScale3D(BSC * 0.05f);
 
 		}
