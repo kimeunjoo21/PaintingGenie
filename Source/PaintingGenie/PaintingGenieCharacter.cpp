@@ -19,9 +19,9 @@
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
 #include "Runtime/Engine/Classes/Materials/Material.h"
-#include <../../../../../../../Plugins/FX/Niagara/Source/Niagara/Public/NiagaraFunctionLibrary.h>
-//머티리얼 인클루드
-//#include "Runtime/Engine/Classes/Materials/Material.h"
+//프레임워크 인클루드, 
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Actor.h>
+
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -121,11 +121,42 @@ void APaintingGenieCharacter::BeginPlay()
 void APaintingGenieCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	//게이지 포인터
 	GazePointer();
+	//프린트 로그
+	PrintNetLog();
 	
 
 	
 
+}
+
+void APaintingGenieCharacter::PrintNetLog()
+{
+	// Connection 상태
+	FString conStr = GetNetConnection() != nullptr ? TEXT("Valid Connect") : TEXT("InValid Connect");
+	// 나의 주인 Actor
+	FString ownerStr = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
+	// Role
+	// ROLE_Authority : 모든 권한을 다 갖고 있다 (로직 구현)
+	// ROLE_AutonomousProxy : 제어 (Input) 만 가능하다.
+	// ROLE_SimulatedProxy : 보기만 (시뮬레이션만) 가능한다.
+	FString localRoleStr = UEnum::GetValueAsString<ENetRole>(GetLocalRole());
+	FString remoteRoleStr = UEnum::GetValueAsString<ENetRole>(GetRemoteRole());
+
+	FString log = FString::Printf(TEXT("Connection : %s\nOwner Name : %s\nLocalRole : %s\nRemoteRole : %s"),
+		*conStr, *ownerStr, *localRoleStr, *remoteRoleStr);
+
+	DrawDebugString(
+		GetWorld(),
+		GetActorLocation() + FVector::UpVector * 100,
+		log,
+		nullptr,
+		FColor::Yellow,
+		0,
+		true,
+		1.0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -219,6 +250,23 @@ void APaintingGenieCharacter::Look(const FInputActionValue& Value)
 
 void APaintingGenieCharacter::TakePistol()
 {
+	ServerRPC_TakePistol();
+}
+
+void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
+{	
+	//서버 로그를 호출합니다.
+	if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakePistol server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakePistol client"));
+	}
+
+
+	// TakePistol의 기능을 가져옵니다.
 	// 만약에 총을 들고 있다면
 	if (closestPistol)
 	{
@@ -230,7 +278,7 @@ void APaintingGenieCharacter::TakePistol()
 		return;
 	}
 
-	
+
 	// 총을 들고 있지 않다면
 	//총과의 거리를 최대값까지 넣는다.
 	float closestDist = std::numeric_limits<float>::max();
@@ -241,7 +289,7 @@ void APaintingGenieCharacter::TakePistol()
 	{
 		// 1. 모든 Pistold 에서 나와의 거리를 구하자.
 		//현재 나의 위치와 N번째 모든 피스톨의 위치를 변수에 저장하자.
-		float dist = FVector::	Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
+		float dist = FVector::Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
 
 		// 내가 집을 수 있는 범위에 있니?
 		if (dist > takeGunDist) continue;
@@ -256,25 +304,21 @@ void APaintingGenieCharacter::TakePistol()
 		}
 	}
 
-	AttachPistol(closestPistol);
-
-
-}
-
-void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
-{
-
+	MultiRPC_AttachPistol(closestPistol);
 }
 
 void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 {
 	// 가까운 총이 없으면 함수를 나가자
-	if (closestPistol == nullptr) return;
-	UE_LOG(LogTemp, Warning, TEXT("find pistol"));
+	
+	// if (closestPistol == nullptr) return;
+	//UE_LOG(LogTemp, Warning, TEXT("find pistol"));
 
+	closestPistol = pistol;
 	// 물리적인 현상 Off 시켜주자
-	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(false);
+	
 
 	// 가장 가까운 총을  Mesh -> GunPosition 소켓에 붙이자.
 	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -291,19 +335,26 @@ void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 	// SprintArm 위치 바꿔주자
 	CameraBoom->TargetArmLength = 100;
 	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
-
-
 }
 
 void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pistol)
 {
-
+	AttachPistol(pistol);
 }
 
 void APaintingGenieCharacter::DetachPistol()
 {
+	MultiRPC_DetachPistol();
+
+}
+
+void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
+{
+	//MultiRPC_DetachPistol 의 소스 코드를 가져오자.
+
+
 	// 물리적인 현상 On 시켜주자
-	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(true);
 	// closestPistol 을 compGun 떨어져 나가자
 	closestPistol->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
@@ -319,11 +370,20 @@ void APaintingGenieCharacter::DetachPistol()
 	// SprintArm 위치 바꿔주자
 	CameraBoom->TargetArmLength = 400;
 	CameraBoom->SetRelativeLocation(FVector::ZeroVector);
-
 }
 
 void APaintingGenieCharacter::Fire()
 {
+
+	ServerRPC_Fire();
+	
+
+}
+
+void APaintingGenieCharacter::ServerRPC_Fire_Implementation(AActor* pistol)
+{
+	//Fire()를 가져오자.
+
 	// 총을 들고 있지 않으면 함수를 나가자
 	// 총알이 0개면 함수를 나가자
 	// 재장전 중에는 함수를 나가자
@@ -333,42 +393,50 @@ void APaintingGenieCharacter::Fire()
 	if (closestPistol == nullptr)return;
 	{
 
-	FHitResult hitInfo;
-	FVector startPos = FollowCamera->GetComponentLocation();
-	FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
-	
-	
-	if (isHit)
-	{
-		//스폰 데칼의 어테치의 매개변수
-		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
-		
-		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-		//->SetSortOrder(order);
-		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
-		// order++; 오더를 누적합니다.  
+		FHitResult hitInfo;
+		FVector startPos = FollowCamera->GetComponentLocation();
+		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
 
-		//bsc = decalsize FVector(50)
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
-		order++;
-		
-		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
-		FRotator rot = hitInfo.ImpactNormal.Rotation();
-		//충돌시 폭발 효과 주자.
-		// UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, rot, FVector(1.0f), true);
+
+		if (isHit)
+		{
+			//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
+			//FVector in = hitInfo.ImpactNormal;
+
+			//충돌결과의 노말값을 로테이션으로 형변환
+			//hitInfo.ImpactNormal.Rotation();
+			FRotator rot = hitInfo.ImpactNormal.Rotation();
+
+			//스폰 데칼의 어테치의 매개변수
+			/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
+
+			//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
+			//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
+			//->SetSortOrder(order);
+			//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
+			// order++; 오더를 누적합니다.  
+
+			//pbn = scale
+			//bsc = decalsize FVector(50)
+			//rot = hitInfo.ImpactNormal.Rotation();
+			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
+			order++;
+
+			//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
+
+			//충돌시 폭발 효과 주자.
+			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
 		}
-	// 총 쏘는 애니메이션 실행
-	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
-	
-	
-	
-	}
 
+		// 총 쏘는 애니메이션 실행
+		//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
+
+
+
+	}
 }
 
 void APaintingGenieCharacter::SetBulletColor()
@@ -494,8 +562,6 @@ void APaintingGenieCharacter::GazePointer()
 		{
 			gazePointer->SetVisibility(true);
 			gazePointer->SetWorldLocation(hitInfo.Location);
-			//gazePointer->SetWorldLocation(hitInfo.Location - 50*GetActorForwardVector());
-			gazePointer->SetWorldRotation(hitInfo.ImpactNormal.Rotation() + FRotator(90,0,180));
 			gazePointer->SetWorldScale3D(BSC * 0.05f);
 
 		}
