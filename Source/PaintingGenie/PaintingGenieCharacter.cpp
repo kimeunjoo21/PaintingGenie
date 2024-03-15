@@ -256,12 +256,17 @@ void APaintingGenieCharacter::TakePistol()
 		}
 	}
 
-	AttachPistol();
+	AttachPistol(closestPistol);
 
 
 }
 
-void APaintingGenieCharacter::AttachPistol()
+void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
+{
+
+}
+
+void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 {
 	// 가까운 총이 없으면 함수를 나가자
 	if (closestPistol == nullptr) return;
@@ -287,6 +292,11 @@ void APaintingGenieCharacter::AttachPistol()
 	CameraBoom->TargetArmLength = 100;
 	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
 
+
+}
+
+void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pistol)
+{
 
 }
 
