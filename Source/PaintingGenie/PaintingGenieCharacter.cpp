@@ -367,7 +367,7 @@ void APaintingGenieCharacter::SetBulletColor()
 		pistolpaintArray.Add(tempBlue.Object);
 	}
 
-	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
+	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/KEJ/M_Space.M_Space'"));
 
 	if (tempGreen.Succeeded())
 	{
