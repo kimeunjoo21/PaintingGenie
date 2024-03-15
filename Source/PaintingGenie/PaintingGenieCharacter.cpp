@@ -374,13 +374,12 @@ void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
 
 void APaintingGenieCharacter::Fire()
 {
-
 	ServerRPC_Fire();
+	MultiRPC_Fire();
 	
-
 }
 
-void APaintingGenieCharacter::ServerRPC_Fire_Implementation(AActor* pistol)
+void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
 {
 	//Fire()를 가져오자.
 
@@ -388,7 +387,7 @@ void APaintingGenieCharacter::ServerRPC_Fire_Implementation(AActor* pistol)
 	// 총알이 0개면 함수를 나가자
 	// 재장전 중에는 함수를 나가자
 	//if (closestPistol == nullptr || currBulletCnt <= 0 || isReloading) return;
-	
+
 	//피스톨이 없으면 리턴
 	if (closestPistol == nullptr)return;
 	{
@@ -433,11 +432,58 @@ void APaintingGenieCharacter::ServerRPC_Fire_Implementation(AActor* pistol)
 
 		// 총 쏘는 애니메이션 실행
 		//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
+	}
+
+	
+}
+
+void APaintingGenieCharacter::MultiRPC_Fire_Implementation()
+{
+	if (closestPistol == nullptr)return;
+	{
+
+		FHitResult hitInfo;
+		FVector startPos = FollowCamera->GetComponentLocation();
+		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
 
 
+		if (isHit)
+		{
+			UE_LOG(LogTemp, Warning, TEXT(" multi ishit "));
+			//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
+			//FVector in = hitInfo.ImpactNormal;
 
+			//충돌결과의 노말값을 로테이션으로 형변환
+			//hitInfo.ImpactNormal.Rotation();
+			FRotator rot = hitInfo.ImpactNormal.Rotation();
+
+			//스폰 데칼의 어테치의 매개변수
+			/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
+
+			//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
+			//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
+			//->SetSortOrder(order);
+			//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
+			// order++; 오더를 누적합니다.  
+
+			//pbn = scale
+			//bsc = decalsize FVector(50)
+			//rot = hitInfo.ImpactNormal.Rotation();
+			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
+			order++;
+
+			//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
+
+			//충돌시 폭발 효과 주자.
+			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		}
 	}
 }
+
+
 
 void APaintingGenieCharacter::SetBulletColor()
 {
@@ -469,35 +515,106 @@ void APaintingGenieCharacter::SetBulletColor()
 	}
 
 
+	//MultiRPC_SetBulletColor();
 	
-	
+}
+
+void APaintingGenieCharacter::MultiRPC_SetBulletColor_Implementation()
+{
+	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempRed.Object);
+
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
+
+	if (tempBlue.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempBlue.Object);
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
+
+	if (tempGreen.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempGreen.Object);
+	}
 }
 
 void APaintingGenieCharacter::afterBulletColor()
 {	
 	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
 	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
-	pbn = pbn + 1;
 	
-	if (pbn > pistolpaintArray.Num() - 1) 
-	{	
+	ServerRPC_afterBulletColor();
+	MultiRPC_afterBulletColor();
+}
+
+void APaintingGenieCharacter::ServerRPC_afterBulletColor_Implementation()
+{
+	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
+	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
+	
+		pbn = pbn + 1;
+		//UE_LOG(LogTemp, Warning, TEXT(" server abc : %d"), pbn);
+
+		if (pbn > pistolpaintArray.Num() - 1)
+		{
+			pbn = 0;
+			
+		}
+		
+}
+
+void APaintingGenieCharacter::MultiRPC_afterBulletColor_Implementation()
+{
+	pbn = pbn + 1;
+
+	//UE_LOG(LogTemp, Warning, TEXT(" multi abc : %d"), pbn);
+	if (pbn > pistolpaintArray.Num() - 1)
+	{
 		pbn = 0;
 	}
-
-	
 }
 
 void APaintingGenieCharacter::beforeBulletColor()
 {
 	//pbn -1을 하면 카운트의 나머지를 값으로 받는다.
 	//pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
-	pbn = pbn - 1;
+	/*pbn = pbn - 1;
 
 	if (pbn < 0)
 	{
 		pbn = pistolpaintArray.Num()-1;
-	}
+	}*/
+	ServerRPC_beforeBulletColor();
+	MultiRPC_beforeBulletColor();
+}
 
+void APaintingGenieCharacter::ServerRPC_beforeBulletColor_Implementation()
+{
+	pbn = pbn - 1;
+
+	if (pbn < 0)
+	{
+		pbn = pistolpaintArray.Num() - 1;
+	}
+}
+
+void APaintingGenieCharacter::MultiRPC_beforeBulletColor_Implementation()
+{
+	pbn = pbn - 1;
+
+	if (pbn < 0)
+	{
+		pbn = pistolpaintArray.Num() - 1;
+	}
 }
 
 void APaintingGenieCharacter::bulletScaleUp()

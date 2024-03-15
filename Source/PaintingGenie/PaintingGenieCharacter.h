@@ -118,19 +118,36 @@ public:
 	void Fire();
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_Fire();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_Fire();
 
 	//	색깔을 설정하자
 	void SetBulletColor();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_SetBulletColor();
+	
+
 	//다음 색깔로 바꾸자
 	void afterBulletColor();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_afterBulletColor();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_afterBulletColor();
+
 	//색 배열변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 pbn = 0;
 	//TArray<class UMaterialInterface> pbn;
 	//오더 차상위를 지정합니다.
 	int32 order = 0;
+	
 	//이전 색깔로 바꾸자
 	void beforeBulletColor();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_beforeBulletColor();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_beforeBulletColor();
+
 	//불렛 스케일을 키울수 있을까?
 	UPROPERTY(EditAnywhere)
 	//불렛 크기 초기 값 20
