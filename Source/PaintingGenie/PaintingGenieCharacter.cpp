@@ -19,8 +19,9 @@
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
 #include "Runtime/Engine/Classes/Materials/Material.h"
-//머티리얼 인클루드
-//#include "Runtime/Engine/Classes/Materials/Material.h"
+//프레임워크 인클루드, 
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Actor.h>
+
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -120,11 +121,42 @@ void APaintingGenieCharacter::BeginPlay()
 void APaintingGenieCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+
+	//게이지 포인터
 	GazePointer();
+	//프린트 로그
+	PrintNetLog();
 	
 
 	
 
+}
+
+void APaintingGenieCharacter::PrintNetLog()
+{
+	// Connection 상태
+	FString conStr = GetNetConnection() != nullptr ? TEXT("Valid Connect") : TEXT("InValid Connect");
+	// 나의 주인 Actor
+	FString ownerStr = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
+	// Role
+	// ROLE_Authority : 모든 권한을 다 갖고 있다 (로직 구현)
+	// ROLE_AutonomousProxy : 제어 (Input) 만 가능하다.
+	// ROLE_SimulatedProxy : 보기만 (시뮬레이션만) 가능한다.
+	FString localRoleStr = UEnum::GetValueAsString<ENetRole>(GetLocalRole());
+	FString remoteRoleStr = UEnum::GetValueAsString<ENetRole>(GetRemoteRole());
+
+	FString log = FString::Printf(TEXT("Connection : %s\nOwner Name : %s\nLocalRole : %s\nRemoteRole : %s"),
+		*conStr, *ownerStr, *localRoleStr, *remoteRoleStr);
+
+	DrawDebugString(
+		GetWorld(),
+		GetActorLocation() + FVector::UpVector * 100,
+		log,
+		nullptr,
+		FColor::Yellow,
+		0,
+		true,
+		1.0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -218,6 +250,23 @@ void APaintingGenieCharacter::Look(const FInputActionValue& Value)
 
 void APaintingGenieCharacter::TakePistol()
 {
+	ServerRPC_TakePistol();
+}
+
+void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
+{	
+	//서버 로그를 호출합니다.
+	if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakePistol server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakePistol client"));
+	}
+
+
+	// TakePistol의 기능을 가져옵니다.
 	// 만약에 총을 들고 있다면
 	if (closestPistol)
 	{
@@ -229,7 +278,7 @@ void APaintingGenieCharacter::TakePistol()
 		return;
 	}
 
-	
+
 	// 총을 들고 있지 않다면
 	//총과의 거리를 최대값까지 넣는다.
 	float closestDist = std::numeric_limits<float>::max();
@@ -240,7 +289,7 @@ void APaintingGenieCharacter::TakePistol()
 	{
 		// 1. 모든 Pistold 에서 나와의 거리를 구하자.
 		//현재 나의 위치와 N번째 모든 피스톨의 위치를 변수에 저장하자.
-		float dist = FVector::	Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
+		float dist = FVector::Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
 
 		// 내가 집을 수 있는 범위에 있니?
 		if (dist > takeGunDist) continue;
@@ -255,20 +304,20 @@ void APaintingGenieCharacter::TakePistol()
 		}
 	}
 
-	AttachPistol();
-
-
+	MultiRPC_AttachPistol(closestPistol);
 }
 
-void APaintingGenieCharacter::AttachPistol()
+void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 {
 	// 가까운 총이 없으면 함수를 나가자
-	if (closestPistol == nullptr) return;
+	
+	// if (closestPistol == nullptr) return;
 	UE_LOG(LogTemp, Warning, TEXT("find pistol"));
-
+	closestPistol = pistol;
 	// 물리적인 현상 Off 시켜주자
 	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(false);
+	
 
 	// 가장 가까운 총을  Mesh -> GunPosition 소켓에 붙이자.
 	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -285,8 +334,11 @@ void APaintingGenieCharacter::AttachPistol()
 	// SprintArm 위치 바꿔주자
 	CameraBoom->TargetArmLength = 100;
 	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
+}
 
-
+void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pistol)
+{
+	AttachPistol(pistol);
 }
 
 void APaintingGenieCharacter::DetachPistol()

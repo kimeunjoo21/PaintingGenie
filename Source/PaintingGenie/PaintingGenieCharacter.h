@@ -95,8 +95,17 @@ protected:
 			
 	//총을 잡자
 	void TakePistol();
+	//서버 동기화를 해보자.
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_TakePistol();
+
+
 	//총을 소켓에 붙이자
-	void AttachPistol();
+	void AttachPistol(AActor* pistol);
+	//멀티 캐스트 동기화
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_AttachPistol(AActor* pistol);
+
 	//총을 때자
 	void DetachPistol();
 
@@ -154,6 +163,8 @@ protected:
 	virtual void BeginPlay();
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	void PrintNetLog();
 
 
 public:

@@ -18,4 +18,11 @@ void UP4AnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
 	Super::NativeUpdateAnimation(DeltaSeconds);
 
+	if (player)
+	{
+		//0 ~ 360 --> -180 ~ 180
+		pitchAngle = -player->GetBaseAimRotation().Pitch;
+
+		pitchAngle = -player->GetBaseAimRotation().GetNormalized().Pitch;
+	}
 }
