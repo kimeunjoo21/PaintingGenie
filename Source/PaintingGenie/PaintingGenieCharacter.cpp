@@ -312,10 +312,11 @@ void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 	// 가까운 총이 없으면 함수를 나가자
 	
 	// if (closestPistol == nullptr) return;
-	UE_LOG(LogTemp, Warning, TEXT("find pistol"));
+	//UE_LOG(LogTemp, Warning, TEXT("find pistol"));
+
 	closestPistol = pistol;
 	// 물리적인 현상 Off 시켜주자
-	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(false);
 	
 
@@ -343,8 +344,17 @@ void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pisto
 
 void APaintingGenieCharacter::DetachPistol()
 {
+	MultiRPC_DetachPistol();
+
+}
+
+void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
+{
+	//MultiRPC_DetachPistol 의 소스 코드를 가져오자.
+
+
 	// 물리적인 현상 On 시켜주자
-	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(true);
 	// closestPistol 을 compGun 떨어져 나가자
 	closestPistol->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
@@ -360,11 +370,20 @@ void APaintingGenieCharacter::DetachPistol()
 	// SprintArm 위치 바꿔주자
 	CameraBoom->TargetArmLength = 400;
 	CameraBoom->SetRelativeLocation(FVector::ZeroVector);
-
 }
 
 void APaintingGenieCharacter::Fire()
 {
+
+	ServerRPC_Fire();
+	
+
+}
+
+void APaintingGenieCharacter::ServerRPC_Fire_Implementation(AActor* pistol)
+{
+	//Fire()를 가져오자.
+
 	// 총을 들고 있지 않으면 함수를 나가자
 	// 총알이 0개면 함수를 나가자
 	// 재장전 중에는 함수를 나가자
@@ -374,51 +393,50 @@ void APaintingGenieCharacter::Fire()
 	if (closestPistol == nullptr)return;
 	{
 
-	FHitResult hitInfo;
-	FVector startPos = FollowCamera->GetComponentLocation();
-	FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
-	
-	
-	if (isHit)
-	{	
-		//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
-		//FVector in = hitInfo.ImpactNormal;
-		
-		//충돌결과의 노말값을 로테이션으로 형변환
-		//hitInfo.ImpactNormal.Rotation();
-		FRotator rot = hitInfo.ImpactNormal.Rotation();
+		FHitResult hitInfo;
+		FVector startPos = FollowCamera->GetComponentLocation();
+		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
 
-		//스폰 데칼의 어테치의 매개변수
-		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
-		
-		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-		//->SetSortOrder(order);
-		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
-		// order++; 오더를 누적합니다.  
 
-		//pbn = scale
-		//bsc = decalsize FVector(50)
-		//rot = hitInfo.ImpactNormal.Rotation();
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
-		order++;
-		
-		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
-		
-		//충돌시 폭발 효과 주자.
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		if (isHit)
+		{
+			//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
+			//FVector in = hitInfo.ImpactNormal;
+
+			//충돌결과의 노말값을 로테이션으로 형변환
+			//hitInfo.ImpactNormal.Rotation();
+			FRotator rot = hitInfo.ImpactNormal.Rotation();
+
+			//스폰 데칼의 어테치의 매개변수
+			/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
+
+			//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
+			//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
+			//->SetSortOrder(order);
+			//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
+			// order++; 오더를 누적합니다.  
+
+			//pbn = scale
+			//bsc = decalsize FVector(50)
+			//rot = hitInfo.ImpactNormal.Rotation();
+			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
+			order++;
+
+			//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
+
+			//충돌시 폭발 효과 주자.
+			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		}
+
+		// 총 쏘는 애니메이션 실행
+		//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
+
+
+
 	}
-
-	// 총 쏘는 애니메이션 실행
-	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
-	
-	
-	
-	}
-
 }
 
 void APaintingGenieCharacter::SetBulletColor()

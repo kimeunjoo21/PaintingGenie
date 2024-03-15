@@ -108,11 +108,17 @@ protected:
 
 	//총을 때자
 	void DetachPistol();
+	//멀태 캐스트 동기화
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_DetachPistol();
 
 public:
 	//총을쏘자
 	UFUNCTION(BlueprintCallable)
 	void Fire();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_Fire();
+
 	//	색깔을 설정하자
 	void SetBulletColor();
 	//다음 색깔로 바꾸자
@@ -193,6 +199,10 @@ public:
 
 	UPROPERTY()
 	AActor* closestPistol;
+	
+	//컴프 매쉬를 전역변수로
+	UPROPERTY()
+	class UStaticMeshComponent * compMesh;
 
 	//UPROPERTY(EditAnywhere)
 	//class UParticleSystem* pistolEffect;
