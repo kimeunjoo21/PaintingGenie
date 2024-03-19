@@ -268,13 +268,14 @@ void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
 
 	// TakePistol의 기능을 가져옵니다.
 	// 만약에 총을 들고 있다면
+	UE_LOG(LogTemp,Warning, TEXT("pistol %s"), closestPistol);
 	if (closestPistol)
 	{
 		//총을 손에서 때자
-		DetachPistol();
+		MultiRPC_DetachPistol();
 		//피스톨 상태를 null로
+		//closestPistol->SetOwner(nullptr);
 		closestPistol = nullptr;
-		//리턴
 		return;
 	}
 
@@ -301,24 +302,29 @@ void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
 			closestDist = dist;
 			// closestPistol 를 allPistol[i] 로 갱신
 			closestPistol = allPistol[i];
+			// 총의 owner 설정
+			closestPistol->SetOwner(this);
+
 		}
 	}
 
 	MultiRPC_AttachPistol(closestPistol);
+	//AttachPistol();
 }
 
 void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 {
 	// 가까운 총이 없으면 함수를 나가자
-	
-	// if (closestPistol == nullptr) return;
-	//UE_LOG(LogTemp, Warning, TEXT("find pistol"));
-
 	closestPistol = pistol;
-	// 물리적인 현상 Off 시켜주자
-	compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
-	compMesh->SetSimulatePhysics(false);
+	if (closestPistol == nullptr) return;
+
+	UE_LOG(LogTemp, Warning, TEXT("closestpistol : %s"), closestPistol);
+	//UE_LOG(LogTemp, Warning, TEXT("attach pistol"));
 	
+	// 물리적인 현상 Off 시켜주자
+	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	compMesh->SetSimulatePhysics(false);
+
 
 	// 가장 가까운 총을  Mesh -> GunPosition 소켓에 붙이자.
 	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -337,24 +343,17 @@ void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
 }
 
+
 void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pistol)
 {
 	AttachPistol(pistol);
 }
 
 void APaintingGenieCharacter::DetachPistol()
-{
-	MultiRPC_DetachPistol();
-
-}
-
-void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
-{
-	//MultiRPC_DetachPistol 의 소스 코드를 가져오자.
-
+{	
 
 	// 물리적인 현상 On 시켜주자
-	compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
+	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(true);
 	// closestPistol 을 compGun 떨어져 나가자
 	closestPistol->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
@@ -370,13 +369,22 @@ void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
 	// SprintArm 위치 바꿔주자
 	CameraBoom->TargetArmLength = 400;
 	CameraBoom->SetRelativeLocation(FVector::ZeroVector);
+
+	//UI를 보이게하자.
+
+}
+
+void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
+{
+	
+	DetachPistol();
+		closestPistol = nullptr;
 }
 
 void APaintingGenieCharacter::Fire()
 {
 	ServerRPC_Fire();
-	MultiRPC_Fire();
-	
+		
 }
 
 void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
@@ -390,97 +398,55 @@ void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
 
 	//피스톨이 없으면 리턴
 	if (closestPistol == nullptr)return;
-	{
-
-		FHitResult hitInfo;
-		FVector startPos = FollowCamera->GetComponentLocation();
-		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
-
-
-		if (isHit)
-		{
-			//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
-			//FVector in = hitInfo.ImpactNormal;
-
-			//충돌결과의 노말값을 로테이션으로 형변환
-			//hitInfo.ImpactNormal.Rotation();
-			FRotator rot = hitInfo.ImpactNormal.Rotation();
-
-			//스폰 데칼의 어테치의 매개변수
-			/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
-
-			//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-			//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-			//->SetSortOrder(order);
-			//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
-			// order++; 오더를 누적합니다.  
-
-			//pbn = scale
-			//bsc = decalsize FVector(50)
-			//rot = hitInfo.ImpactNormal.Rotation();
-			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
-			order++;
-
-			//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
-
-			//충돌시 폭발 효과 주자.
-			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
-		}
-
-		// 총 쏘는 애니메이션 실행
-		//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
-	}
-
 	
+
+	FHitResult hitInfo;
+	FVector startPos = FollowCamera->GetComponentLocation();
+	FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+
+	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+
+
+	MultiRPC_Fire(isHit, hitInfo.ImpactPoint, hitInfo.ImpactNormal.Rotation());
 }
 
-void APaintingGenieCharacter::MultiRPC_Fire_Implementation()
-{
-	if (closestPistol == nullptr)return;
+void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector impactPoint, FRotator decalRot)
+{	
+	if (isHit)
 	{
+		//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
+		//FVector in = hitInfo.ImpactNormal;
 
-		FHitResult hitInfo;
-		FVector startPos = FollowCamera->GetComponentLocation();
-		FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
-		FCollisionQueryParams params;
-		params.AddIgnoredActor(this);
-		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+		//충돌결과의 노말값을 로테이션으로 형변환
+		//hitInfo.ImpactNormal.Rotation();
+		FRotator rot = impactPoint.Rotation();
+		rot = decalRot;
 
+		//스폰 데칼의 어테치의 매개변수
+		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
 
-		if (isHit)
-		{
-			UE_LOG(LogTemp, Warning, TEXT(" multi ishit "));
-			//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
-			//FVector in = hitInfo.ImpactNormal;
+		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
+		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
+		//->SetSortOrder(order);
+		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
+		// order++; 오더를 누적합니다.  
 
-			//충돌결과의 노말값을 로테이션으로 형변환
-			//hitInfo.ImpactNormal.Rotation();
-			FRotator rot = hitInfo.ImpactNormal.Rotation();
+		//pbn = scale
+		//bsc = decalsize FVector(50)
+		//rot = hitInfo.ImpactNormal.Rotation();
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
+		order++;
 
-			//스폰 데칼의 어테치의 매개변수
-			/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
+		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 
-			//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-			//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
-			//->SetSortOrder(order);
-			//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
-			// order++; 오더를 누적합니다.  
-
-			//pbn = scale
-			//bsc = decalsize FVector(50)
-			//rot = hitInfo.ImpactNormal.Rotation();
-			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, rot, 0)->SetSortOrder(order);
-			order++;
-
-			//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
-
-			//충돌시 폭발 효과 주자.
-			//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
-		}
+		//충돌시 폭발 효과 주자.
+		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
 	}
+
+	// 총 쏘는 애니메이션 실행
+	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
 }
 
 
@@ -553,7 +519,8 @@ void APaintingGenieCharacter::afterBulletColor()
 	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
 	
 	ServerRPC_afterBulletColor();
-	MultiRPC_afterBulletColor();
+	
+	
 }
 
 void APaintingGenieCharacter::ServerRPC_afterBulletColor_Implementation()
@@ -561,25 +528,27 @@ void APaintingGenieCharacter::ServerRPC_afterBulletColor_Implementation()
 	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
 	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
 	
-		pbn = pbn + 1;
-		//UE_LOG(LogTemp, Warning, TEXT(" server abc : %d"), pbn);
+		//pbn = pbn + 1;
+		////UE_LOG(LogTemp, Warning, TEXT(" server abc : %d"), pbn);
 
-		if (pbn > pistolpaintArray.Num() - 1)
-		{
-			pbn = 0;
-			
-		}
-		
+		//if (pbn > pistolpaintArray.Num() - 1)
+		//{
+		//	pbn = 0;
+		//	
+		//}
+		MultiRPC_afterBulletColor();
 }
 
 void APaintingGenieCharacter::MultiRPC_afterBulletColor_Implementation()
 {
 	pbn = pbn + 1;
+	
+	UE_LOG(LogTemp, Warning, TEXT(" multi abc : %d"), pbn);
 
-	//UE_LOG(LogTemp, Warning, TEXT(" multi abc : %d"), pbn);
 	if (pbn > pistolpaintArray.Num() - 1)
 	{
 		pbn = 0;
+
 	}
 }
 
@@ -594,17 +563,19 @@ void APaintingGenieCharacter::beforeBulletColor()
 		pbn = pistolpaintArray.Num()-1;
 	}*/
 	ServerRPC_beforeBulletColor();
-	MultiRPC_beforeBulletColor();
+	
 }
 
 void APaintingGenieCharacter::ServerRPC_beforeBulletColor_Implementation()
 {
-	pbn = pbn - 1;
+	/*pbn = pbn - 1;
 
 	if (pbn < 0)
 	{
 		pbn = pistolpaintArray.Num() - 1;
-	}
+	}*/
+
+	MultiRPC_beforeBulletColor();
 }
 
 void APaintingGenieCharacter::MultiRPC_beforeBulletColor_Implementation()
@@ -619,6 +590,16 @@ void APaintingGenieCharacter::MultiRPC_beforeBulletColor_Implementation()
 
 void APaintingGenieCharacter::bulletScaleUp()
 {
+	ServerRPC_bulletScaleUp();
+}
+
+void APaintingGenieCharacter::ServerRPC_bulletScaleUp_Implementation()
+{
+	MultiRPC_bulletScaleUp();
+}
+
+void APaintingGenieCharacter::MultiRPC_bulletScaleUp_Implementation()
+{
 	//BulletScaleChange
 	BSC = BSC + 1;
 	UE_LOG(LogTemp, Warning, TEXT("BSC UP :: %s"), *BSC.ToString());
@@ -626,11 +607,21 @@ void APaintingGenieCharacter::bulletScaleUp()
 
 void APaintingGenieCharacter::bulletScaleDown()
 {
+	ServerRPC_bulletScaleDown();
+}
+
+void APaintingGenieCharacter::ServerRPC_bulletScaleDown_Implementation()
+{
+	MultiRPC_bulletScaleDown();
+}
+
+void APaintingGenieCharacter::MultiRPC_bulletScaleDown_Implementation()
+{
 	//만약 0보다 작거나 같으면 리턴
 	if (BSC.Length() <= 0) return;
 	BSC = BSC - 1;
-	
-	
+
+
 	UE_LOG(LogTemp, Warning, TEXT("BSC DOWN :: %s"), *BSC.ToString());
 }
 

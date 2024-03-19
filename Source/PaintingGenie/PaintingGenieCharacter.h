@@ -119,7 +119,7 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_Fire();
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiRPC_Fire();
+	void MultiRPC_Fire(bool isHit, FVector impactPoint, FRotator decalRot);
 
 	//	색깔을 설정하자
 	void SetBulletColor();
@@ -153,7 +153,16 @@ public:
 	//불렛 크기 초기 값 20
 	FVector BSC = FVector(20);
 	void bulletScaleUp();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_bulletScaleUp();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_bulletScaleUp();
+
 	void bulletScaleDown();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_bulletScaleDown();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_bulletScaleDown();
 	
 	//불릿 크기를 미리보기 할수 있을까?
 	void SetGazePointer();
@@ -218,8 +227,8 @@ public:
 	AActor* closestPistol;
 	
 	//컴프 매쉬를 전역변수로
-	UPROPERTY()
-	class UStaticMeshComponent * compMesh;
+	//UPROPERTY()
+	//class UStaticMeshComponent * compMesh;
 
 	//UPROPERTY(EditAnywhere)
 	//class UParticleSystem* pistolEffect;
