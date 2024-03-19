@@ -21,7 +21,10 @@ public:
 
 	// 버튼 변수 선언
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_Play;
+	class UButton* Btn_SinglePlay;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_MultiPlay;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_Options;
@@ -47,9 +50,13 @@ public:
 	// Title 화면 위젯 생성 함수
 	void ShowTitleWidget();
 
-	// Play 버튼을 눌렀을 때 레벨 이동 함수
+	// Single Play 버튼을 눌렀을 때 메인 레벨로 바로 이동하는 함수
 	UFUNCTION()
 	void StartSingleModeGame();
+
+	// Multi Play 버튼을 눌렀을 때 LobbyMap으로 이동하는 함수
+	UFUNCTION()
+	void GoLobbyMap();
 
 	// Quit 버튼을 눌렀을 때 게임 종료 함수
 	UFUNCTION()

@@ -17,4 +17,34 @@ class PAINTINGGENIE_API ULoginWidget : public UUserWidget
 public:
 	// BeginPlay 와 같은 기능의 함수
 	virtual void NativeConstruct() override;
+
+public:
+	// 메인화면
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_MoveCreateSession;
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_MoveSearchSession;
+
+	UPROPERTY(meta = (BindWidget))
+	class UWidgetSwitcher* widgetSwitcher;
+
+	UFUNCTION()
+	void OnClickMoveCreateSession();
+	UFUNCTION()
+	void OnClickMoveSearchSession();
+
+	// 세션 생성 화면
+	UPROPERTY(meta = (BindWidget))
+	class UEditableTextBox* edit_SessionName;
+	UPROPERTY(meta = (BindWidget))
+	class USlider* slider_PlayerCount;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* text_PlayerCount;
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_CreateSession;
+
+	UFUNCTION()
+	void OnValueChanged(float Value);
+	UFUNCTION()
+	void OnClickCreateSession();
 };
