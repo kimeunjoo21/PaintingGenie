@@ -18,8 +18,10 @@
 //씬 컴포넌트
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
-//머티리얼 인클루드
-//#include "Runtime/Engine/Classes/Materials/Material.h"
+#include "Runtime/Engine/Classes/Materials/Material.h"
+//프레임워크 인클루드, 
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Actor.h>
+
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -70,7 +72,10 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	//총알 색깔을 정하자
 	SetBulletColor();
 
+	//게이지 포인터를 세팅하자.
+	SetGazePointer();
 
+	
 
 
 
@@ -111,6 +116,47 @@ void APaintingGenieCharacter::BeginPlay()
 	}
 
 	
+}
+
+void APaintingGenieCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	//게이지 포인터
+	GazePointer();
+	//프린트 로그
+	PrintNetLog();
+	
+
+	
+
+}
+
+void APaintingGenieCharacter::PrintNetLog()
+{
+	// Connection 상태
+	FString conStr = GetNetConnection() != nullptr ? TEXT("Valid Connect") : TEXT("InValid Connect");
+	// 나의 주인 Actor
+	FString ownerStr = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
+	// Role
+	// ROLE_Authority : 모든 권한을 다 갖고 있다 (로직 구현)
+	// ROLE_AutonomousProxy : 제어 (Input) 만 가능하다.
+	// ROLE_SimulatedProxy : 보기만 (시뮬레이션만) 가능한다.
+	FString localRoleStr = UEnum::GetValueAsString<ENetRole>(GetLocalRole());
+	FString remoteRoleStr = UEnum::GetValueAsString<ENetRole>(GetRemoteRole());
+
+	FString log = FString::Printf(TEXT("Connection : %s\nOwner Name : %s\nLocalRole : %s\nRemoteRole : %s"),
+		*conStr, *ownerStr, *localRoleStr, *remoteRoleStr);
+
+	DrawDebugString(
+		GetWorld(),
+		GetActorLocation() + FVector::UpVector * 100,
+		log,
+		nullptr,
+		FColor::Yellow,
+		0,
+		true,
+		1.0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -204,18 +250,36 @@ void APaintingGenieCharacter::Look(const FInputActionValue& Value)
 
 void APaintingGenieCharacter::TakePistol()
 {
+	ServerRPC_TakePistol();
+}
+
+void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
+{	
+	//서버 로그를 호출합니다.
+	if (HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakePistol server"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TakePistol client"));
+	}
+
+
+	// TakePistol의 기능을 가져옵니다.
 	// 만약에 총을 들고 있다면
+	UE_LOG(LogTemp,Warning, TEXT("pistol %s"), closestPistol);
 	if (closestPistol)
 	{
 		//총을 손에서 때자
-		DetachPistol();
+		MultiRPC_DetachPistol();
 		//피스톨 상태를 null로
+		//closestPistol->SetOwner(nullptr);
 		closestPistol = nullptr;
-		//리턴
 		return;
 	}
 
-	
+
 	// 총을 들고 있지 않다면
 	//총과의 거리를 최대값까지 넣는다.
 	float closestDist = std::numeric_limits<float>::max();
@@ -226,7 +290,7 @@ void APaintingGenieCharacter::TakePistol()
 	{
 		// 1. 모든 Pistold 에서 나와의 거리를 구하자.
 		//현재 나의 위치와 N번째 모든 피스톨의 위치를 변수에 저장하자.
-		float dist = FVector::	Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
+		float dist = FVector::Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
 
 		// 내가 집을 수 있는 범위에 있니?
 		if (dist > takeGunDist) continue;
@@ -238,23 +302,29 @@ void APaintingGenieCharacter::TakePistol()
 			closestDist = dist;
 			// closestPistol 를 allPistol[i] 로 갱신
 			closestPistol = allPistol[i];
+			// 총의 owner 설정
+			closestPistol->SetOwner(this);
+
 		}
 	}
 
-	AttachPistol();
-
-
+	MultiRPC_AttachPistol(closestPistol);
+	//AttachPistol();
 }
 
-void APaintingGenieCharacter::AttachPistol()
+void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 {
 	// 가까운 총이 없으면 함수를 나가자
+	closestPistol = pistol;
 	if (closestPistol == nullptr) return;
-	UE_LOG(LogTemp, Warning, TEXT("find pistol"));
 
+	UE_LOG(LogTemp, Warning, TEXT("closestpistol : %s"), closestPistol);
+	//UE_LOG(LogTemp, Warning, TEXT("attach pistol"));
+	
 	// 물리적인 현상 Off 시켜주자
 	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(false);
+
 
 	// 가장 가까운 총을  Mesh -> GunPosition 소켓에 붙이자.
 	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
@@ -271,12 +341,17 @@ void APaintingGenieCharacter::AttachPistol()
 	// SprintArm 위치 바꿔주자
 	CameraBoom->TargetArmLength = 100;
 	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
+}
 
 
+void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pistol)
+{
+	AttachPistol(pistol);
 }
 
 void APaintingGenieCharacter::DetachPistol()
-{
+{	
+
 	// 물리적인 현상 On 시켜주자
 	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(true);
@@ -295,56 +370,86 @@ void APaintingGenieCharacter::DetachPistol()
 	CameraBoom->TargetArmLength = 400;
 	CameraBoom->SetRelativeLocation(FVector::ZeroVector);
 
+	//UI를 보이게하자.
+
+}
+
+void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
+{
+	
+	DetachPistol();
+		closestPistol = nullptr;
 }
 
 void APaintingGenieCharacter::Fire()
 {
+	ServerRPC_Fire();
+		
+}
+
+void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
+{
+	//Fire()를 가져오자.
+
 	// 총을 들고 있지 않으면 함수를 나가자
 	// 총알이 0개면 함수를 나가자
 	// 재장전 중에는 함수를 나가자
 	//if (closestPistol == nullptr || currBulletCnt <= 0 || isReloading) return;
-	
+
 	//피스톨이 없으면 리턴
 	if (closestPistol == nullptr)return;
-	{
+	
 
 	FHitResult hitInfo;
 	FVector startPos = FollowCamera->GetComponentLocation();
 	FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
+
 	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
-	
-	
+
+
+	MultiRPC_Fire(isHit, hitInfo.ImpactPoint, hitInfo.ImpactNormal.Rotation());
+}
+
+void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector impactPoint, FRotator decalRot)
+{	
 	if (isHit)
 	{
+		//hitInfo.ImpactNormal 충돌위치의 로테이션값을 FVector로 반환합니다.
+		//FVector in = hitInfo.ImpactNormal;
+
+		//충돌결과의 노말값을 로테이션으로 형변환
+		//hitInfo.ImpactNormal.Rotation();
+		FRotator rot = impactPoint.Rotation();
+		rot = decalRot;
+
 		//스폰 데칼의 어테치의 매개변수
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
-		
+
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
 		//스폰액터 (위치, 타입, 크기, 위치, 방향, 시간(0=무제한))
 		//->SetSortOrder(order);
 		//->SetSortOrder(order); 셋 소트오더를 통해서 레이어를 최상위로 올립니다.
 		// order++; 오더를 누적합니다.  
 
+		//pbn = scale
 		//bsc = decalsize FVector(50)
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), hitInfo.ImpactPoint, FRotator::ZeroRotator, 0)->SetSortOrder(order);
+		//rot = hitInfo.ImpactNormal.Rotation();
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
 		order++;
-		
+
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
-		
+
 		//충돌시 폭발 효과 주자.
 		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
 	}
 
 	// 총 쏘는 애니메이션 실행
 	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
-	
-	
-	
-	}
-
 }
+
+
 
 void APaintingGenieCharacter::SetBulletColor()
 {
@@ -376,38 +481,124 @@ void APaintingGenieCharacter::SetBulletColor()
 	}
 
 
+	//MultiRPC_SetBulletColor();
 	
-	
+}
+
+void APaintingGenieCharacter::MultiRPC_SetBulletColor_Implementation()
+{
+	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
+
+	if (tempRed.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempRed.Object);
+
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempBlue(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_BlueSQ.M_BlueSQ'"));
+
+	if (tempBlue.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempBlue.Object);
+	}
+
+	ConstructorHelpers::FObjectFinder<UMaterial>tempGreen(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/GeenSquare_Mat.GeenSquare_Mat'"));
+
+	if (tempGreen.Succeeded())
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
+		pistolpaintArray.Add(tempGreen.Object);
+	}
 }
 
 void APaintingGenieCharacter::afterBulletColor()
 {	
 	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
 	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
+	
+	ServerRPC_afterBulletColor();
+	
+	
+}
+
+void APaintingGenieCharacter::ServerRPC_afterBulletColor_Implementation()
+{
+	//pbn값이 0이면 카운트의 나머지 값으로 받는다.
+	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
+	
+		//pbn = pbn + 1;
+		////UE_LOG(LogTemp, Warning, TEXT(" server abc : %d"), pbn);
+
+		//if (pbn > pistolpaintArray.Num() - 1)
+		//{
+		//	pbn = 0;
+		//	
+		//}
+		MultiRPC_afterBulletColor();
+}
+
+void APaintingGenieCharacter::MultiRPC_afterBulletColor_Implementation()
+{
 	pbn = pbn + 1;
 	
-	if (pbn > pistolpaintArray.Num() - 1) 
-	{	
-		pbn = 0;
-	}
+	UE_LOG(LogTemp, Warning, TEXT(" multi abc : %d"), pbn);
 
-	
+	if (pbn > pistolpaintArray.Num() - 1)
+	{
+		pbn = 0;
+
+	}
 }
 
 void APaintingGenieCharacter::beforeBulletColor()
 {
 	//pbn -1을 하면 카운트의 나머지를 값으로 받는다.
 	//pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
-	pbn = pbn - 1;
+	/*pbn = pbn - 1;
 
 	if (pbn < 0)
 	{
 		pbn = pistolpaintArray.Num()-1;
-	}
+	}*/
+	ServerRPC_beforeBulletColor();
+	
+}
 
+void APaintingGenieCharacter::ServerRPC_beforeBulletColor_Implementation()
+{
+	/*pbn = pbn - 1;
+
+	if (pbn < 0)
+	{
+		pbn = pistolpaintArray.Num() - 1;
+	}*/
+
+	MultiRPC_beforeBulletColor();
+}
+
+void APaintingGenieCharacter::MultiRPC_beforeBulletColor_Implementation()
+{
+	pbn = pbn - 1;
+
+	if (pbn < 0)
+	{
+		pbn = pistolpaintArray.Num() - 1;
+	}
 }
 
 void APaintingGenieCharacter::bulletScaleUp()
+{
+	ServerRPC_bulletScaleUp();
+}
+
+void APaintingGenieCharacter::ServerRPC_bulletScaleUp_Implementation()
+{
+	MultiRPC_bulletScaleUp();
+}
+
+void APaintingGenieCharacter::MultiRPC_bulletScaleUp_Implementation()
 {
 	//BulletScaleChange
 	BSC = BSC + 1;
@@ -416,9 +607,79 @@ void APaintingGenieCharacter::bulletScaleUp()
 
 void APaintingGenieCharacter::bulletScaleDown()
 {
+	ServerRPC_bulletScaleDown();
+}
+
+void APaintingGenieCharacter::ServerRPC_bulletScaleDown_Implementation()
+{
+	MultiRPC_bulletScaleDown();
+}
+
+void APaintingGenieCharacter::MultiRPC_bulletScaleDown_Implementation()
+{
+	//만약 0보다 작거나 같으면 리턴
 	if (BSC.Length() <= 0) return;
 	BSC = BSC - 1;
-	
-	
+
+
 	UE_LOG(LogTemp, Warning, TEXT("BSC DOWN :: %s"), *BSC.ToString());
+}
+
+void APaintingGenieCharacter::SetGazePointer()
+{
+	gazePointer = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Gaze Pointer Mesh"));
+	gazePointer->SetupAttachment(RootComponent);
+	gazePointer->SetWorldScale3D(FVector(0.1f));
+	gazePointer->SetWorldLocation(FVector(300, 0, 0));
+	gazePointer->SetWorldRotation(FRotator(0, 90, 90));
+	gazePointer->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ConstructorHelpers::FObjectFinder<UStaticMesh>tempGaze(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Plane.Plane'"));
+	if (tempGaze.Succeeded())
+	{
+		gazePointer->SetStaticMesh(tempGaze.Object);
+		//인덱스번호, 머티리얼
+		//gazePointer->SetMaterial(0, mateGaze.Object);
+	}
+	ConstructorHelpers::FObjectFinder<UMaterial>mateGaze(TEXT("/ Script / Engine.Material'/Game/BluePrint/re/gazepointer/M_GazePointer.M_GazePointer'"));
+	if (mateGaze.Succeeded())
+	{	
+		//인덱스번호, 머티리얼
+		gazePointer->SetMaterial(0, mateGaze.Object);
+	}
+
+
+
+}
+
+void APaintingGenieCharacter::GazePointer()
+{
+	//총을 잡았니?
+	if (closestPistol)
+	{
+		FHitResult hitInfo;
+		FVector startPos = FollowCamera->GetComponentLocation();
+		FVector endPos = startPos + FollowCamera->GetForwardVector() * maxSight;
+		//FVector endPos = startPos + FollowCamera->GetForwardVector() * 100000;
+		//FVector camForward = FRotationMatrix(FollowCamera->GetComponentRotation()).GetUnitAxis(EAxis::X);
+		//FVector endPos = startPos + camForward * 100000;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+		bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+
+		if (isHit)
+		{
+			gazePointer->SetVisibility(true);
+			gazePointer->SetWorldLocation(hitInfo.Location);
+			gazePointer->SetWorldScale3D(BSC * 0.05f);
+
+		}
+		else
+		{
+			gazePointer->SetVisibility(false);
+		}
+		//FVector calcSize = FMath::Lerp(FVector(minSize), FVector(maxSize), rate);
+		//총을 잡았다면 출력
+		//UE_LOG(LogTemp, Warning,TEXT("Grab pistol"))	
+	}
+	
 }

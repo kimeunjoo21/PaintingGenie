@@ -18,7 +18,8 @@ void UTitleWidget::NativeConstruct()
 	//	TitleWidget = tempTitleWidget.Class;
 	//}
 
-	Btn_Play->OnClicked.AddDynamic(this, &UTitleWidget::StartSingleModeGame);
+	Btn_SinglePlay->OnClicked.AddDynamic(this, &UTitleWidget::StartSingleModeGame);
+	Btn_MultiPlay->OnClicked.AddDynamic(this, &UTitleWidget::GoLobbyMap);
 	Btn_Options->OnClicked.AddDynamic(this, &UTitleWidget::StartSingleModeGame);
 	Btn_Quit->OnClicked.AddDynamic(this, &UTitleWidget::QuitGame);
 
@@ -42,6 +43,11 @@ void UTitleWidget::StartSingleModeGame()
 {
 	UGameplayStatics::OpenLevel(GetWorld(),"ThirdPersonMap");
 	//titleWidgetUI->SetVisibility(false);
+}
+
+void UTitleWidget::GoLobbyMap()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), "LobbyMap");
 }
 
 void UTitleWidget::QuitGame()

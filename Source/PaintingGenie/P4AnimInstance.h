@@ -30,6 +30,9 @@ public:
 	//총을 가지고 있는지 확인하자.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	bool hasPistol;
+	//플레이어 폰의 에임을 조정
+	UPROPERTY(BlueprintReadOnly)
+	float pitchAngle;
 
 
 	

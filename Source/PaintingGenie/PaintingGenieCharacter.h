@@ -95,30 +95,95 @@ protected:
 			
 	//총을 잡자
 	void TakePistol();
+	//서버 동기화를 해보자.
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_TakePistol();
+
+
 	//총을 소켓에 붙이자
-	void AttachPistol();
+	void AttachPistol(AActor* pistol);
+	//멀티 캐스트 동기화
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_AttachPistol(AActor* pistol);
+
 	//총을 때자
 	void DetachPistol();
+	//멀태 캐스트 동기화
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_DetachPistol();
 
 public:
 	//총을쏘자
+	UFUNCTION(BlueprintCallable)
 	void Fire();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_Fire();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_Fire(bool isHit, FVector impactPoint, FRotator decalRot);
+
 	//	색깔을 설정하자
 	void SetBulletColor();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_SetBulletColor();
+	
+
 	//다음 색깔로 바꾸자
 	void afterBulletColor();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_afterBulletColor();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_afterBulletColor();
+
 	//색 배열변수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 pbn = 0;
 	//TArray<class UMaterialInterface> pbn;
 	//오더 차상위를 지정합니다.
 	int32 order = 0;
+	
 	//이전 색깔로 바꾸자
 	void beforeBulletColor();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_beforeBulletColor();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_beforeBulletColor();
+
 	//불렛 스케일을 키울수 있을까?
 	UPROPERTY(EditAnywhere)
+	//불렛 크기 초기 값 20
 	FVector BSC = FVector(20);
 	void bulletScaleUp();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_bulletScaleUp();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_bulletScaleUp();
+
 	void bulletScaleDown();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_bulletScaleDown();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_bulletScaleDown();
+	
+	//불릿 크기를 미리보기 할수 있을까?
+	void SetGazePointer();
+	
+	//최대시야거리
+	UPROPERTY(EditAnywhere, Category="MySettings")
+	float maxSight = 10000.0f;
+	//최소크기
+	UPROPERTY(EditAnywhere, Category = "MySettings")
+	float minSize = 1.0f;
+	//최대크기 BSC와 동기화
+	UPROPERTY(EditAnywhere, Category = "MySettings")
+	float maxSize= BSC.Length();
+	//줄어드는값
+	float rate = 1.0f;
+	//게이지 포인터 매쉬가 필요함.
+	UPROPERTY(VisibleAnywhere, Category = "MySettings|Components")
+	class UStaticMeshComponent* gazePointer;
+	void GazePointer();
+
+
 
 
 
@@ -129,6 +194,11 @@ protected:
 	
 	// To add mapping context
 	virtual void BeginPlay();
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	void PrintNetLog();
+
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -155,16 +225,23 @@ public:
 
 	UPROPERTY()
 	AActor* closestPistol;
+	
+	//컴프 매쉬를 전역변수로
+	//UPROPERTY()
+	//class UStaticMeshComponent * compMesh;
 
+	//UPROPERTY(EditAnywhere)
+	//class UParticleSystem* pistolEffect;
+	
 	UPROPERTY(EditAnywhere)
-	class UParticleSystem* pistolEffect;
+	class UNiagaraSystem* pistolEffect;
 
 	//피스톨 페인트 테스트
 	UPROPERTY(EditAnywhere)
 	class UMaterialInterface* pistolPaint;
 
 	//페인트를 배열로 지정하자.
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<class UMaterialInterface*> pistolpaintArray;
 
 	
