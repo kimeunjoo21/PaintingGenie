@@ -19,6 +19,11 @@ public:
 	virtual void NativeConstruct() override;
 
 public:
+
+	// gameinstance 담는 변수
+	UPROPERTY()
+	class UNetGameInstance* gi;
+
 	// 메인화면
 	UPROPERTY(meta = (BindWidget))
 	class UButton* btn_MoveCreateSession;
@@ -47,4 +52,24 @@ public:
 	void OnValueChanged(float Value);
 	UFUNCTION()
 	void OnClickCreateSession();
+
+	// 세션 검색 | 참여 화면
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_FindSession;
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* scroll_RoomList;
+	//UPROPERTY(meta = (BindWidget))
+	//class UButton* btn_Exit_RoomList;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* text_FindSession;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class USessionSlotWidget> sessionInfoWidgetFactory;
+
+	UFUNCTION()
+	void OnClickFindSession();
+
+	// 세션 검색 완료되면 호출되는 함수
+	UFUNCTION()
+	void OnSearchComplete(int32 idx, FString info);
 };
