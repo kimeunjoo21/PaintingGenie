@@ -72,4 +72,21 @@ public:
 	// 세션 검색 완료되면 호출되는 함수
 	UFUNCTION()
 	void OnSearchComplete(int32 idx, FString info);
+
+	// 위젯 스위처에서 메인 화면 (0번 캔버스)으로 가는 버튼 및 함수
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_Exit_CreateSession;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_Exit_RoomList;
+
+	UFUNCTION()
+	void OnClickExit();
+	
+	// 메인화면 (0번 캔버스)에서 홈화면(TitleWidget)으로 가는 버튼 및 함수
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_GoTitleWidget;
+
+	UFUNCTION() 
+	void OnClickGoTitleWidget();
 };

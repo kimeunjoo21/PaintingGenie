@@ -23,6 +23,8 @@ void ULoginWidget::NativeConstruct()
 	// 로그인 메인 화면 기능
 	btn_MoveCreateSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickMoveCreateSession);
 	btn_MoveSearchSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickMoveSearchSession);
+	btn_Exit_CreateSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickExit);
+	btn_GoTitleWidget->OnClicked.AddDynamic(this, &ULoginWidget::OnClickGoTitleWidget);
 
 	// text_PlayerCount를 초기값 설정
 	text_PlayerCount->SetText(FText::AsNumber(slider_PlayerCount->GetValue()));
@@ -35,6 +37,7 @@ void ULoginWidget::NativeConstruct()
 	// 세션 검색 화면 기능들
 	btn_FindSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickFindSession);
 	gi->onSearchComplete.BindUObject(this, &ULoginWidget::OnSearchComplete);
+	btn_Exit_RoomList->OnClicked.AddDynamic(this, &ULoginWidget::OnClickExit);
 
 }
 
@@ -92,4 +95,14 @@ void ULoginWidget::OnSearchComplete(int32 idx, FString info)
 		// 만들어진 sessionInfo에 데이터를 셋팅
 		widget->SetInfo(idx, info);
 	}
+}
+
+void ULoginWidget::OnClickExit()
+{
+	widgetSwitcher->SetActiveWidgetIndex(0);
+}
+
+void ULoginWidget::OnClickGoTitleWidget()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), "TitleMap");
 }
