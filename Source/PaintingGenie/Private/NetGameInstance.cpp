@@ -113,7 +113,6 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 			UE_LOG(LogTemp, Warning, TEXT("%d name : %s, count : %d"), i, *roomName,
 				si.Session.NumOpenPublicConnections);
 
-			roomName = StringBase64Decode(roomName);
 
 			// 세션 정보 ---> String으로 
 			// 세션의 최대 인원
@@ -121,6 +120,7 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 			// 세션의 참여 인원 (최대 인원 - 남은 인원)
 			int32 currPlayer = maxPlayer - si.Session.NumOpenPublicConnections;
 
+			roomName = StringBase64Decode(roomName);
 			// 방이름 ( 5 / 10 )
 			FString sessionInfo = FString::Printf(
 				TEXT("%s ( %d / %d )"),
