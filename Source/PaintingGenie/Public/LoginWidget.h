@@ -58,8 +58,6 @@ public:
 	class UButton* btn_FindSession;
 	UPROPERTY(meta = (BindWidget))
 	class UScrollBox* scroll_RoomList;
-	//UPROPERTY(meta = (BindWidget))
-	//class UButton* btn_Exit_RoomList;
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* text_FindSession;
 
