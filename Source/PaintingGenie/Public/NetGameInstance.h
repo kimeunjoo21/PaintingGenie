@@ -78,5 +78,6 @@ public:
 //	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Screen")
 //	TArray<FString> StringPaths;
 
+// Restore¿ë ÄÚµå
 
 };
