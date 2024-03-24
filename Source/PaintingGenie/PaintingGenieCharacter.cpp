@@ -443,6 +443,7 @@ void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector i
 
 		//충돌시 폭발 효과 주자.
 		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, rot, FVector(1.0f), true);
 	}
 
 	// 총 쏘는 애니메이션 실행
