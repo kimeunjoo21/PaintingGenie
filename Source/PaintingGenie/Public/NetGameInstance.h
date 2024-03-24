@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MoviePlayer.h"
 #include "Engine/GameInstance.h"
+#include "Runtime/UMG/Public/UMG.h"
+#include "Slate.h"
 #include <Interfaces/OnlineSessionInterface.h>
 #include "NetGameInstance.generated.h"
 
@@ -56,5 +59,24 @@ public:
 
 	// 세션 검색이 완료되면 호출해야 하는 Delegate
 	FSearchComplete onSearchComplete; 
+
+
+/*-------------------------- 로딩 화면 --------------------------*/
+public:
+	UFUNCTION(BlueprintCallable, meta= (DisplayName = "BeginLoadingScreen"), Category = "Loading Screen")
+	virtual void BeginLoadingScreen(const FString& MapName);
+	UFUNCTION(BlueprintCallable, meta = (DisplayName = "EndLoadingScreen"), Category = "Loading Screen")
+	virtual void EndLoadingScreen(UWorld* InLoadedWorld);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Screen")
+	TSubclassOf<class UUserWidget> LoadingScreenWidget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Screen")
+	bool useMovies;
+
+	// 사용할 Movies 경로 받을 변수
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Loading Screen")
+	TArray<FString> StringPaths;
+
 
 };

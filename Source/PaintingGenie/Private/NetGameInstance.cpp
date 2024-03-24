@@ -6,6 +6,7 @@
 #include <OnlineSessionSettings.h>
 #include <Interfaces/OnlineSessionInterface.h>
 #include <Online/OnlineSessionNames.h>
+#include "MoviePlayer.h"
 
 void UNetGameInstance::Init()
 {
@@ -21,6 +22,10 @@ void UNetGameInstance::Init()
 		sessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &UNetGameInstance::OnFindSessionComplete);
 		sessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &UNetGameInstance::OnJoinSessionComplete);
 	}
+
+	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UNetGameInstance::BeginLoadingScreen);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UNetGameInstance::EndLoadingScreen);
+
 
 }
 
@@ -193,4 +198,26 @@ FString UNetGameInstance::StringBase64Decode(FString str)
 	FBase64::Decode(str, arrayData);
 	std::string utf8String((char*)(arrayData.GetData()), arrayData.Num());
 	return UTF8_TO_TCHAR(utf8String.c_str());
+}
+
+void UNetGameInstance::BeginLoadingScreen(const FString& MapName)
+{
+	if (!IsRunningDedicatedServer())
+	{
+		FLoadingScreenAttributes LoadingScreen;
+		LoadingScreen.bAutoCompleteWhenLoadingCompletes = false;
+		
+		if (useMovies)
+		{
+			LoadingScreen.MoviePaths = StringPaths;
+		}
+		// LoadingScreen.WidgetLoadingScreen = FLoadingScreenAttributes::NewTestLoadingScreenWidget();
+		UUserWidget* widget = CreateWidget<UUserWidget>(GetWorld(), LoadingScreenWidget);
+
+		GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
+	}
+}
+
+void UNetGameInstance::EndLoadingScreen(UWorld* InLoadedWorld)
+{
 }
