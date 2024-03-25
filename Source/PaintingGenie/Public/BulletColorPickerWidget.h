@@ -16,13 +16,13 @@ class PAINTINGGENIE_API UBulletColorPickerWidget : public UUserWidget
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<class UMaterial*> bulletColorPicker;
+	TArray<class UMaterialInterface*> bulletColorPicker;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<class UImage*> bulletImageColor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<class FVector*> fcolorArray;
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+// 	TArray<class FVector*> fcolorArray;
 	
 	
 };
