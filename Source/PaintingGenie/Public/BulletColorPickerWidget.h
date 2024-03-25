@@ -27,10 +27,15 @@ public:
 	class UBorder* boderwidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_colorPickMenu;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_apply;
-	
+
+	bool isColorPicker = true;
 	
 	
 	virtual void NativeConstruct() override;
+	UFUNCTION()
 	void resizeWidget();
 };
