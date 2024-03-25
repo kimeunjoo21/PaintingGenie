@@ -21,6 +21,7 @@
 #include "Runtime/Engine/Classes/Materials/Material.h"
 //프레임워크 인클루드, 
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Actor.h>
+#include <../../../../../../../Source/Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h>
 
 
 
@@ -436,7 +437,10 @@ void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector i
 		//pbn = scale
 		//bsc = decalsize FVector(50)
 		//rot = hitInfo.ImpactNormal.Rotation();
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
+		UMaterialInstanceDynamic* mat = UMaterialInstanceDynamic::Create(pistolpaintArray[pbn], this);
+		mat->SetVectorParameterValue(FName(TEXT("Param")), color);
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *color.ToString());
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), mat, FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
 		order++;
 
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));

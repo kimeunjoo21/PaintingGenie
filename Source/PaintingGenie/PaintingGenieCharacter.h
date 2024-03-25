@@ -244,7 +244,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<class UMaterialInterface*> pistolpaintArray;
 
-	
+	UPROPERTY(BlueprintReadWrite)
+	FLinearColor color = FLinearColor(1, 0, 0, 1);
 	
 	
 
