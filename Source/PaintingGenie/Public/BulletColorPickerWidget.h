@@ -23,6 +23,14 @@ public:
 
 // 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 // 	TArray<class FVector*> fcolorArray;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UBorder* boderwidget;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_apply;
 	
 	
+	
+	virtual void NativeConstruct() override;
+	void resizeWidget();
 };
