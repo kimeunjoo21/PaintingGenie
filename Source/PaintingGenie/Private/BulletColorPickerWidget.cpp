@@ -2,8 +2,10 @@
 
 
 #include "BulletColorPickerWidget.h"
-#include <../../../../../../../Source/Runtime/UMG/Public/Components/Border.h>
-#include <../../../../../../../Source/Runtime/UMG/Public/Components/Button.h>
+#include <Components/Border.h>
+#include <Components/Button.h>
+#include <../../../../../../../Source/Runtime/UMG/Public/Components/Widget.h>
+#include <../../../../../../../Plugins/Runtime/Synthesis/Source/Synthesis/Public/UI/Synth2DSlider.h>
 
 
 
@@ -12,8 +14,8 @@ void UBulletColorPickerWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	//UButton 인클루드
-	Btn_colorPickMenu-> OnClicked.AddDynamic(this, &UBulletColorPickerWidget::resizeWidget);
-		
+	Btn_colorPickMenu->OnClicked.AddDynamic(this, &UBulletColorPickerWidget::resizeWidget);
+	colorwheel->OnValueChanegX.AddDynamic(this, &UBulletColorPickerWidget::ChanegeColorWheel);
 }
 
 void UBulletColorPickerWidget::resizeWidget()
@@ -33,3 +35,11 @@ void UBulletColorPickerWidget::resizeWidget()
 		UE_LOG(LogTemp, Warning, TEXT("visible picker"))
 	}
 }
+
+void UBulletColorPickerWidget::ChanegeColorWheel()
+{
+
+	//USynth2DSlider* colorwheel = NewObject<USynth2DSlider>();
+	colorwheel->GetValue();
+}
+

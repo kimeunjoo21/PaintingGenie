@@ -10,6 +10,7 @@ public class PaintingGenie : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new string[] { 
 			"Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", 
-			"UMG", "Niagara", "OnlineSubsystem", "OnlineSubsystemSteam"});
-	}
+			"UMG", "Niagara", "OnlineSubsystem", "OnlineSubsystemSteam", "Synthesis"});
+         
+    }
 }
