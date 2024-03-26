@@ -76,7 +76,9 @@ class APaintingGenieCharacter : public ACharacter
 	//머티리얼의 크기를 바꾸자.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* bulletScaleDownValue;
-
+	//액터를지우자
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* removeBulletActor;
 
 
 
@@ -183,6 +185,8 @@ public:
 	class UStaticMeshComponent* gazePointer;
 	void GazePointer();
 
+	void Remove();
+
 
 
 
@@ -244,8 +248,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<class UMaterialInterface*> pistolpaintArray;
 
+	//라인컬러를 정하자.
 	UPROPERTY(BlueprintReadWrite)
 	FLinearColor color = FLinearColor(1, 0, 0, 1);
+
+	class UMaterialInstanceDynamic* mat;
+
+
 	
 	
 
