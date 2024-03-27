@@ -464,12 +464,12 @@ void APaintingGenieCharacter::SetBulletColor()
 {
 	//Script/Engine.Material'/Game/BluePrint/re/circle/M_REDCC.M_REDCC
 	//생성자에서만 가능하기 때문에 총알을 배열로 넣어서 하자.
-	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
+	ConstructorHelpers::FObjectFinder<UMaterial>tempColorPicker(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_ColorPickerBullet.M_ColorPickerBullet'"));
 
-	if (tempRed.Succeeded())
+	if (tempColorPicker.Succeeded())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
-		pistolpaintArray.Add(tempRed.Object);
+		pistolpaintArray.Add(tempColorPicker.Object);
 
 	}
 
