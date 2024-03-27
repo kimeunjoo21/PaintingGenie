@@ -34,8 +34,24 @@ public:
 
 	bool isColorPicker = true;
 	
+	//컬러픽커 휠
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class USynth2DSlider* colorwheel;
 	
+	//슬라이더 벨류(밝기)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class USlider* Slider_value;
+
+	//슬라이더 오파시티(투명도)
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class USlider* Slider_opacity;
+
+
+
+
+
 	virtual void NativeConstruct() override;
 	UFUNCTION()
 	void resizeWidget();
+	void ChanegeColorWheel();
 };

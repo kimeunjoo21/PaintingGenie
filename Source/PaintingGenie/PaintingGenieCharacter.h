@@ -119,9 +119,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Fire();
 	UFUNCTION(Server, Reliable)
-	void ServerRPC_Fire();
+	void ServerRPC_Fire(FLinearColor bulletColor);
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiRPC_Fire(bool isHit, FVector impactPoint, FRotator decalRot);
+	void MultiRPC_Fire(bool isHit, FVector impactPoint, FRotator decalRot, FLinearColor bulletColor);
 
 	//	색깔을 설정하자
 	void SetBulletColor();
