@@ -41,7 +41,7 @@ void UTitleWidget::ShowTitleWidget()
 
 void UTitleWidget::StartSingleModeGame()
 {
-	UGameplayStatics::OpenLevel(GetWorld(),"ThirdPersonMap");
+	UGameplayStatics::OpenLevel(GetWorld(),"LV_EJSoul_Slum");
 	//titleWidgetUI->SetVisibility(false);
 }
 

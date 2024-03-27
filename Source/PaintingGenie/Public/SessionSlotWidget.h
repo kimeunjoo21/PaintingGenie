@@ -18,4 +18,18 @@ public:
 	// BeginPlay 와 같은 기능의 함수
 	virtual void NativeConstruct() override;
 
+public:
+int32 sessionIdx;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* text_SessionInfo;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* btn_JoinSession;
+
+	UFUNCTION()
+	void OnClickJoinSession();
+
+	void SetInfo(int32 idx, FString info);
+
 };

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+Ôªø// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LoginWidget.h"
@@ -7,43 +7,102 @@
 #include <Components/Slider.h>
 #include <Components/TextBlock.h>
 #include <Components/EditableTextBox.h>
+#include "NetGameInstance.h"
+#include "SessionSlotWidget.h"
+#include <Components/ScrollBox.h>
+#include <Kismet/GameplayStatics.h>
+#include <GameFramework/PlayerState.h>
 
 void ULoginWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// game instance ∞°¡Æø√ øπ¡§
-	
+	// game instance Í∞ÄÏ†∏Ïò§Í∏∞
+	gi = Cast<UNetGameInstance>(GetGameInstance());
 
-	// ∑Œ±◊¿Œ ∏ﬁ¿Œ »≠∏È ±‚¥…
+	// Î°úÍ∑∏Ïù∏ Î©îÏù∏ ÌôîÎ©¥ Í∏∞Îä•
 	btn_MoveCreateSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickMoveCreateSession);
 	btn_MoveSearchSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickMoveSearchSession);
+	btn_Exit_CreateSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickExit);
+	btn_GoTitleWidget->OnClicked.AddDynamic(this, &ULoginWidget::OnClickGoTitleWidget);
 
-	// text_PlayerCount∏¶ √ ±‚∞™ º≥¡§
-	// text_PlayerCount->SetText(FText::AsNumber(slider_PlayerCount->GetValue()));
-	// 
-	// Slider¿« ∞™¿Ã ∫Ø∞Êµ… ∂ß «‘ºˆ µÓ∑œ
+	// text_PlayerCountÎ•º Ï¥àÍ∏∞Í∞í ÏÑ§Ï†ï
+	text_PlayerCount->SetText(FText::AsNumber(slider_PlayerCount->GetValue()));
+
+	// SliderÏùò Í∞íÏù¥ Î≥ÄÍ≤ΩÎê† Îïå Ìï®Ïàò Îì±Î°ù
 	slider_PlayerCount->OnValueChanged.AddDynamic(this, &ULoginWidget::OnValueChanged);
+
+	btn_CreateSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickCreateSession);
+
+	// ÏÑ∏ÏÖò Í≤ÄÏÉâ ÌôîÎ©¥ Í∏∞Îä•Îì§
+	btn_FindSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickFindSession);
+	gi->onSearchComplete.BindUObject(this, &ULoginWidget::OnSearchComplete);
+	btn_Exit_RoomList->OnClicked.AddDynamic(this, &ULoginWidget::OnClickExit);
+
 }
 
 void ULoginWidget::OnClickMoveCreateSession()
 {
-	// widget switcher∏¶ ¿ÃøÎ«ÿº≠ 1π¯¬∞ Widget »∞º∫»≠
+	// widget switcherÎ•º Ïù¥Ïö©Ìï¥ÏÑú 1Î≤àÏß∏ Widget ÌôúÏÑ±Ìôî
 	widgetSwitcher->SetActiveWidgetIndex(1);
+
+	APlayerState* ps = UGameplayStatics::GetPlayerState(GetWorld(), 0);
 }
 
 void ULoginWidget::OnClickMoveSearchSession()
 {
-
+	// widget switcherÎ•º Ïù¥Ïö©Ìï¥ÏÑú 2Î≤àÏß∏ CanvasÏóê ÎßåÎì§Ïñ¥Îëî Widget ÌôúÏÑ±Ìôî
+	widgetSwitcher->SetActiveWidgetIndex(2);
+	// Î∞îÎ°ú Í≤ÄÏÉâ ÏãúÏûë
+	OnClickFindSession();
 }
 
 void ULoginWidget::OnValueChanged(float Value)
 {
-	// player count ≈ÿΩ∫∆Æ ∞ªΩ≈
+	// player count ÌÖçÏä§Ìä∏ Í∞±Ïã†
 	text_PlayerCount->SetText(FText::AsNumber(Value));
 }
 
 void ULoginWidget::OnClickCreateSession()
 {
-	// √ﬂ»ƒ gi ª˝º∫ «‘ºˆ ±∏«ˆ øπ¡§
+	// gi ÏÉùÏÑ± Ìï®Ïàò 
+	gi->CreateMySession(edit_SessionName->GetText().ToString(), slider_PlayerCount->GetValue());
+}
+
+void ULoginWidget::OnClickFindSession()
+{
+	// scroll_RoomListÏùò ÏûêÏãùÎì§ ÏßÄÏö∞Î©¥ÏÑú ÌÅ¥Î¶≠Ïãú ÎßàÎã§ Í∞±Ïã†(?)ÌïòÍ∏∞
+	scroll_RoomList->ClearChildren();
+	gi->FindOtherSession();
+
+	text_FindSession->SetText(FText::FromString(TEXT("Í≤ÄÏÉâÏ§ë...")));
+	btn_FindSession->SetIsEnabled(false);
+}
+
+void ULoginWidget::OnSearchComplete(int32 idx, FString info)
+{
+	if (idx < 0)
+	{
+		text_FindSession->SetText(FText::FromString(TEXT("ÏÑ∏ÏÖò Í≤ÄÏÉâ")));
+		btn_FindSession->SetIsEnabled(true);
+	}
+	else
+	{
+		// SessionInfoWidget ÏÉùÏÑ±
+		auto widget = CreateWidget<USessionSlotWidget>(GetWorld(), sessionInfoWidgetFactory);
+		// Scroll_RoomListÏóê Ï∂îÍ∞Ä 
+		scroll_RoomList->AddChild(widget);
+		// ÎßåÎì§Ïñ¥ÏßÑ sessionInfoÏóê Îç∞Ïù¥ÌÑ∞Î•º ÏÖãÌåÖ
+		widget->SetInfo(idx, info);
+	}
+}
+
+void ULoginWidget::OnClickExit()
+{
+	widgetSwitcher->SetActiveWidgetIndex(0);
+}
+
+void ULoginWidget::OnClickGoTitleWidget()
+{
+	UGameplayStatics::OpenLevel(GetWorld(), "TitleMap");
 }

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+ï»¿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "PaintingGenieCharacter.h"
 #include "Engine/LocalPlayer.h"
@@ -11,16 +11,17 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 
-//°ÔÀÓ ÇÃ·¹ÀÌ ½ºÅÂÆ½ ÀÎÅ¬·çµå
+//ê²Œì„ í”Œë ˆì´ ìŠ¤íƒœí‹± ì¸í´ë£¨ë“œ
 #include "Kismet/GameplayStatics.h"
-//¾Ö´Ô ÀÎ½ºÅÏ½º ÀÎÅ¬·çµå
+//ì• ë‹˜ ì¸ìŠ¤í„´ìŠ¤ ì¸í´ë£¨ë“œ
 #include "P4AnimInstance.h"
-//¾À ÄÄÆ÷³ÍÆ®
+//ì”¬ ì»´í¬ë„ŒíŠ¸
 #include "Runtime/Engine/Classes/Components/SceneComponent.h"
 #include <../../../../../../../Source/Runtime/Engine/Classes/Components/DecalComponent.h>
 #include "Runtime/Engine/Classes/Materials/Material.h"
-//ÇÁ·¹ÀÓ¿öÅ© ÀÎÅ¬·çµå, 
+//í”„ë ˆì„ì›Œí¬ ì¸í´ë£¨ë“œ, 
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Actor.h>
+#include <../../../../../../../Source/Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h>
 
 
 
@@ -63,16 +64,16 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// ÃÑÀÌ ºÙÀ» ÄÄÆ÷³ÍÆ® ¸¸µéÀÚ
+	// ì´ì´ ë¶™ì„ ì»´í¬ë„ŒíŠ¸ ë§Œë“¤ì
 	compGun = CreateDefaultSubobject<USceneComponent>(TEXT("GUN"));
 	compGun->SetupAttachment(GetMesh(), FName(TEXT("GunPosition")));
 	compGun->SetRelativeLocation(FVector(-7.144f, 3.68f, 4.136f));
 	compGun->SetRelativeRotation(FRotator(3.4f, 75.699f, 6.6424f));
 
-	//ÃÑ¾Ë »ö±òÀ» Á¤ÇÏÀÚ
+	//ì´ì•Œ ìƒ‰ê¹”ì„ ì •í•˜ì
 	SetBulletColor();
 
-	//°ÔÀÌÁö Æ÷ÀÎÅÍ¸¦ ¼¼ÆÃÇÏÀÚ.
+	//ê²Œì´ì§€ í¬ì¸í„°ë¥¼ ì„¸íŒ…í•˜ì.
 	SetGazePointer();
 
 	
@@ -95,18 +96,18 @@ void APaintingGenieCharacter::BeginPlay()
 		}
 	}
 
-	// AnimInstance °¡Á®¿ÀÀÚ
+	// AnimInstance ê°€ì ¸ì˜¤ì
 	anim = Cast<UP4AnimInstance>(GetMesh()->GetAnimInstance());
 
-	// 1. ¹Ù´Ú¿¡ ±ò·ÁÀÖ´Â Pistol À» Ã£ÀÚ.
-	//¾×ÅÍ¸¦ ¹è¿ª·Î ÇÏ°í º¯¼ö¿¡ ÀúÀå.
+	// 1. ë°”ë‹¥ì— ê¹”ë ¤ìˆëŠ” Pistol ì„ ì°¾ì.
+	//ì•¡í„°ë¥¼ ë°°ì—­ë¡œ í•˜ê³  ë³€ìˆ˜ì— ì €ì¥.
 	TArray<AActor*> allActor;
-	//°ÔÀÓ ÇÃ·¹ÀÌ ½ºÅÂÆ½À» ÀÎÅ¬·çµå
-	//¿ùµå¿¡ ¹èÄ¡µÈ ¸ğµç Å¬·¡Áß¿¡¼­ ÇÇ½ºÅçÀÌ¶ó´Â ÀÌ¸§À» Ã£¾Æ¼­ ¹è¿­¿¡ ³ÖÀÚ.
+	//ê²Œì„ í”Œë ˆì´ ìŠ¤íƒœí‹±ì„ ì¸í´ë£¨ë“œ
+	//ì›”ë“œì— ë°°ì¹˜ëœ ëª¨ë“  í´ë˜ì¤‘ì—ì„œ í”¼ìŠ¤í†¨ì´ë¼ëŠ” ì´ë¦„ì„ ì°¾ì•„ì„œ ë°°ì—´ì— ë„£ì.
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), allActor);
 	for (int32 i = 0; i < allActor.Num(); i++)
 	{
-		//¾×ÅÍÀÇ ¶óº§ÀÌ ÇÇ½ºÅçÀÌ¶ó¸é
+		//ì•¡í„°ì˜ ë¼ë²¨ì´ í”¼ìŠ¤í†¨ì´ë¼ë©´
 		if (allActor[i]->GetActorLabel().Contains(TEXT("Pistol")))
 		{
 			allPistol.Add(allActor[i]);
@@ -122,9 +123,9 @@ void APaintingGenieCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	//°ÔÀÌÁö Æ÷ÀÎÅÍ
+	//ê²Œì´ì§€ í¬ì¸í„°
 	GazePointer();
-	//ÇÁ¸°Æ® ·Î±×
+	//í”„ë¦°íŠ¸ ë¡œê·¸
 	PrintNetLog();
 	
 
@@ -134,14 +135,14 @@ void APaintingGenieCharacter::Tick(float DeltaSeconds)
 
 void APaintingGenieCharacter::PrintNetLog()
 {
-	// Connection »óÅÂ
+	// Connection ìƒíƒœ
 	FString conStr = GetNetConnection() != nullptr ? TEXT("Valid Connect") : TEXT("InValid Connect");
-	// ³ªÀÇ ÁÖÀÎ Actor
+	// ë‚˜ì˜ ì£¼ì¸ Actor
 	FString ownerStr = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
 	// Role
-	// ROLE_Authority : ¸ğµç ±ÇÇÑÀ» ´Ù °®°í ÀÖ´Ù (·ÎÁ÷ ±¸Çö)
-	// ROLE_AutonomousProxy : Á¦¾î (Input) ¸¸ °¡´ÉÇÏ´Ù.
-	// ROLE_SimulatedProxy : º¸±â¸¸ (½Ã¹Ä·¹ÀÌ¼Ç¸¸) °¡´ÉÇÑ´Ù.
+	// ROLE_Authority : ëª¨ë“  ê¶Œí•œì„ ë‹¤ ê°–ê³  ìˆë‹¤ (ë¡œì§ êµ¬í˜„)
+	// ROLE_AutonomousProxy : ì œì–´ (Input) ë§Œ ê°€ëŠ¥í•˜ë‹¤.
+	// ROLE_SimulatedProxy : ë³´ê¸°ë§Œ (ì‹œë®¬ë ˆì´ì…˜ë§Œ) ê°€ëŠ¥í•œë‹¤.
 	FString localRoleStr = UEnum::GetValueAsString<ENetRole>(GetLocalRole());
 	FString remoteRoleStr = UEnum::GetValueAsString<ENetRole>(GetRemoteRole());
 
@@ -177,31 +178,33 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::Look);
 
-		// Çì´õ¿¡¼­ ¼±¾ğÇÑ TakePistolActionÀ» ¹ÙÀÎµåÇÏÀÚ.
-		//ÃÑÀâ±â
+		// í—¤ë”ì—ì„œ ì„ ì–¸í•œ TakePistolActionì„ ë°”ì¸ë“œí•˜ì.
+		//ì´ì¡ê¸°
 		EnhancedInputComponent->BindAction(TakePistolAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::TakePistol);
 
-		// Çì´õ¿¡¼­ ¼±¾ğÇÑ FireActionÀ» ¹ÙÀÎµåÇÏÀÚ.
-		// ÃÑ ½î±â ´Ü¹ß
+		// í—¤ë”ì—ì„œ ì„ ì–¸í•œ FireActionì„ ë°”ì¸ë“œí•˜ì.
+		// ì´ ì˜ê¸° ë‹¨ë°œ
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::Fire);
-		//ÃÑ½î±â ¿¬¹ß
+		//ì´ì˜ê¸° ì—°ë°œ
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::Fire);
-		//ºÒ¸´»ö±ò ÀÌÀü ¹Ù²Ù±â
+		//ë¶ˆë¦¿ìƒ‰ê¹” ì´ì „ ë°”ê¾¸ê¸°
 		EnhancedInputComponent->BindAction(afterBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::afterBulletColor);
 		//UE_LOG(LogTemp, Warning, TEXT("afterBulletColor"));
-		//ºÒ¸´»ö±ò ÀÌÀü ¹Ù²Ù±â
+		//ë¶ˆë¦¿ìƒ‰ê¹” ì´ì „ ë°”ê¾¸ê¸°
 		EnhancedInputComponent->BindAction(beforeBullet, ETriggerEvent::Started, this, &APaintingGenieCharacter::beforeBulletColor);
 		//UE_LOG(LogTemp, Warning, TEXT("beforeBulletColor"));
 		
-		//ºÒ·¿ÀÇ Å©±â ¹Ù²Ù±â
+		//ë¶ˆë ›ì˜ í¬ê¸° ë°”ê¾¸ê¸°
 		EnhancedInputComponent->BindAction(bulletScaleUpValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleUp);
 		EnhancedInputComponent->BindAction(bulletScaleUpValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleUp);
 		UE_LOG(LogTemp, Warning, TEXT("bulletScaleUpValue"));
 		
-		//ºÒ·¿ÀÇ Å©±â ¹Ù²Ù±â
+		//ë¶ˆë ›ì˜ í¬ê¸° ë°”ê¾¸ê¸°
 		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleDown);
 		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleDown);
 		UE_LOG(LogTemp, Warning, TEXT("bulletScaleDownValue"));
+		//ì•¡í„°ë¥¼ ì‚­ì œ
+		EnhancedInputComponent->BindAction(removeBulletActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::Remove);
 
 
 
@@ -255,7 +258,7 @@ void APaintingGenieCharacter::TakePistol()
 
 void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
 {	
-	//¼­¹ö ·Î±×¸¦ È£ÃâÇÕ´Ï´Ù.
+	//ì„œë²„ ë¡œê·¸ë¥¼ í˜¸ì¶œí•©ë‹ˆë‹¤.
 	if (HasAuthority())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("TakePistol server"));
@@ -266,43 +269,43 @@ void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
 	}
 
 
-	// TakePistolÀÇ ±â´ÉÀ» °¡Á®¿É´Ï´Ù.
-	// ¸¸¾à¿¡ ÃÑÀ» µé°í ÀÖ´Ù¸é
+	// TakePistolì˜ ê¸°ëŠ¥ì„ ê°€ì ¸ì˜µë‹ˆë‹¤.
+	// ë§Œì•½ì— ì´ì„ ë“¤ê³  ìˆë‹¤ë©´
 	UE_LOG(LogTemp,Warning, TEXT("pistol %s"), closestPistol);
 	if (closestPistol)
 	{
-		//ÃÑÀ» ¼Õ¿¡¼­ ¶§ÀÚ
+		//ì´ì„ ì†ì—ì„œ ë•Œì
 		MultiRPC_DetachPistol();
-		//ÇÇ½ºÅç »óÅÂ¸¦ null·Î
+		//í”¼ìŠ¤í†¨ ìƒíƒœë¥¼ nullë¡œ
 		//closestPistol->SetOwner(nullptr);
 		closestPistol = nullptr;
 		return;
 	}
 
 
-	// ÃÑÀ» µé°í ÀÖÁö ¾Ê´Ù¸é
-	//ÃÑ°úÀÇ °Å¸®¸¦ ÃÖ´ë°ª±îÁö ³Ö´Â´Ù.
+	// ì´ì„ ë“¤ê³  ìˆì§€ ì•Šë‹¤ë©´
+	//ì´ê³¼ì˜ ê±°ë¦¬ë¥¼ ìµœëŒ€ê°’ê¹Œì§€ ë„£ëŠ”ë‹¤.
 	float closestDist = std::numeric_limits<float>::max();
 	closestPistol = nullptr;
 
-	//¹è¿­ i´Â ¿ÃÇÇ½ºÅç
+	//ë°°ì—´ iëŠ” ì˜¬í”¼ìŠ¤í†¨
 	for (int32 i = 0; i < allPistol.Num(); i++)
 	{
-		// 1. ¸ğµç Pistold ¿¡¼­ ³ª¿ÍÀÇ °Å¸®¸¦ ±¸ÇÏÀÚ.
-		//ÇöÀç ³ªÀÇ À§Ä¡¿Í N¹øÂ° ¸ğµç ÇÇ½ºÅçÀÇ À§Ä¡¸¦ º¯¼ö¿¡ ÀúÀåÇÏÀÚ.
+		// 1. ëª¨ë“  Pistold ì—ì„œ ë‚˜ì™€ì˜ ê±°ë¦¬ë¥¼ êµ¬í•˜ì.
+		//í˜„ì¬ ë‚˜ì˜ ìœ„ì¹˜ì™€ Në²ˆì§¸ ëª¨ë“  í”¼ìŠ¤í†¨ì˜ ìœ„ì¹˜ë¥¼ ë³€ìˆ˜ì— ì €ì¥í•˜ì.
 		float dist = FVector::Distance(GetActorLocation(), allPistol[i]->GetActorLocation());
 
-		// ³»°¡ ÁıÀ» ¼ö ÀÖ´Â ¹üÀ§¿¡ ÀÖ´Ï?
+		// ë‚´ê°€ ì§‘ì„ ìˆ˜ ìˆëŠ” ë²”ìœ„ì— ìˆë‹ˆ?
 		if (dist > takeGunDist) continue;
 
-		// closestDist º¸´Ù dist ÀÛ´Ï?
+		// closestDist ë³´ë‹¤ dist ì‘ë‹ˆ?
 		if (closestDist > dist)
 		{
-			// closestDist ¸¦ dist ·Î °»½Å
+			// closestDist ë¥¼ dist ë¡œ ê°±ì‹ 
 			closestDist = dist;
-			// closestPistol ¸¦ allPistol[i] ·Î °»½Å
+			// closestPistol ë¥¼ allPistol[i] ë¡œ ê°±ì‹ 
 			closestPistol = allPistol[i];
-			// ÃÑÀÇ owner ¼³Á¤
+			// ì´ì˜ owner ì„¤ì •
 			closestPistol->SetOwner(this);
 
 		}
@@ -314,31 +317,31 @@ void APaintingGenieCharacter::ServerRPC_TakePistol_Implementation()
 
 void APaintingGenieCharacter::AttachPistol(AActor* pistol)
 {
-	// °¡±î¿î ÃÑÀÌ ¾øÀ¸¸é ÇÔ¼ö¸¦ ³ª°¡ÀÚ
+	// ê°€ê¹Œìš´ ì´ì´ ì—†ìœ¼ë©´ í•¨ìˆ˜ë¥¼ ë‚˜ê°€ì
 	closestPistol = pistol;
 	if (closestPistol == nullptr) return;
 
 	UE_LOG(LogTemp, Warning, TEXT("closestpistol : %s"), closestPistol);
 	//UE_LOG(LogTemp, Warning, TEXT("attach pistol"));
 	
-	// ¹°¸®ÀûÀÎ Çö»ó Off ½ÃÄÑÁÖÀÚ
+	// ë¬¼ë¦¬ì ì¸ í˜„ìƒ Off ì‹œì¼œì£¼ì
 	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(false);
 
 
-	// °¡Àå °¡±î¿î ÃÑÀ»  Mesh -> GunPosition ¼ÒÄÏ¿¡ ºÙÀÌÀÚ.
+	// ê°€ì¥ ê°€ê¹Œìš´ ì´ì„  Mesh -> GunPosition ì†Œì¼“ì— ë¶™ì´ì.
 	closestPistol->AttachToComponent(compGun, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-	// animInstance ¿¡ ÀÖ´Â hasPistol À» true
+	// animInstance ì— ìˆëŠ” hasPistol ì„ true
 	anim = Cast<UP4AnimInstance>(GetMesh()->GetAnimInstance());
 	anim->hasPistol = true;
 
-	//ÃÑÀ» ºÙÀÌ¸é È­¸éÀ» È®´ë ÇØÁÖÀÚ.
-	// bOrientRotaionToMovement ²¨ÁÖÀÚ
+	//ì´ì„ ë¶™ì´ë©´ í™”ë©´ì„ í™•ëŒ€ í•´ì£¼ì.
+	// bOrientRotaionToMovement êº¼ì£¼ì
 	GetCharacterMovement()->bOrientRotationToMovement = false;
-	// RotationYaw ÄÑÁÖÀÚ
+	// RotationYaw ì¼œì£¼ì
 	bUseControllerRotationYaw = true;
-	// SprintArm À§Ä¡ ¹Ù²ãÁÖÀÚ
+	// SprintArm ìœ„ì¹˜ ë°”ê¿”ì£¼ì
 	CameraBoom->TargetArmLength = 100;
 	CameraBoom->SetRelativeLocation(FVector(-4.33f, 33.8f, 70));
 }
@@ -352,25 +355,25 @@ void APaintingGenieCharacter::MultiRPC_AttachPistol_Implementation(AActor* pisto
 void APaintingGenieCharacter::DetachPistol()
 {	
 
-	// ¹°¸®ÀûÀÎ Çö»ó On ½ÃÄÑÁÖÀÚ
+	// ë¬¼ë¦¬ì ì¸ í˜„ìƒ On ì‹œì¼œì£¼ì
 	auto compMesh = closestPistol->GetComponentByClass<UStaticMeshComponent>();
 	compMesh->SetSimulatePhysics(true);
-	// closestPistol À» compGun ¶³¾îÁ® ³ª°¡ÀÚ
+	// closestPistol ì„ compGun ë–¨ì–´ì ¸ ë‚˜ê°€ì
 	closestPistol->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
-	// animInstance ¿¡ ÀÖ´Â hasPistol À» false
+	// animInstance ì— ìˆëŠ” hasPistol ì„ false
 	anim = Cast<UP4AnimInstance>(GetMesh()->GetAnimInstance());
 	anim->hasPistol = false;
 
-	//Ä«¸Ş¶ó ¾ğÁÜ
-	// bOrientRotaionToMovement ÄÑÁÖÀÚ
+	//ì¹´ë©”ë¼ ì–¸ì¤Œ
+	// bOrientRotaionToMovement ì¼œì£¼ì
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	// RotationYaw ²¨ÁÖÀÚ
+	// RotationYaw êº¼ì£¼ì
 	bUseControllerRotationYaw = false;
-	// SprintArm À§Ä¡ ¹Ù²ãÁÖÀÚ
+	// SprintArm ìœ„ì¹˜ ë°”ê¿”ì£¼ì
 	CameraBoom->TargetArmLength = 400;
 	CameraBoom->SetRelativeLocation(FVector::ZeroVector);
 
-	//UI¸¦ º¸ÀÌ°ÔÇÏÀÚ.
+	//UIë¥¼ ë³´ì´ê²Œí•˜ì.
 
 }
 
@@ -383,20 +386,20 @@ void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
 
 void APaintingGenieCharacter::Fire()
 {
-	ServerRPC_Fire();
+	ServerRPC_Fire(color);
 		
 }
 
-void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
+void APaintingGenieCharacter::ServerRPC_Fire_Implementation(FLinearColor bulletColor)
 {
-	//Fire()¸¦ °¡Á®¿ÀÀÚ.
+	//Fire()ë¥¼ ê°€ì ¸ì˜¤ì.
 
-	// ÃÑÀ» µé°í ÀÖÁö ¾ÊÀ¸¸é ÇÔ¼ö¸¦ ³ª°¡ÀÚ
-	// ÃÑ¾ËÀÌ 0°³¸é ÇÔ¼ö¸¦ ³ª°¡ÀÚ
-	// ÀçÀåÀü Áß¿¡´Â ÇÔ¼ö¸¦ ³ª°¡ÀÚ
+	// ì´ì„ ë“¤ê³  ìˆì§€ ì•Šìœ¼ë©´ í•¨ìˆ˜ë¥¼ ë‚˜ê°€ì
+	// ì´ì•Œì´ 0ê°œë©´ í•¨ìˆ˜ë¥¼ ë‚˜ê°€ì
+	// ì¬ì¥ì „ ì¤‘ì—ëŠ” í•¨ìˆ˜ë¥¼ ë‚˜ê°€ì
 	//if (closestPistol == nullptr || currBulletCnt <= 0 || isReloading) return;
 
-	//ÇÇ½ºÅçÀÌ ¾øÀ¸¸é ¸®ÅÏ
+	//í”¼ìŠ¤í†¨ì´ ì—†ìœ¼ë©´ ë¦¬í„´
 	if (closestPistol == nullptr)return;
 	
 
@@ -409,43 +412,49 @@ void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
 	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
 
 
-	MultiRPC_Fire(isHit, hitInfo.ImpactPoint, hitInfo.ImpactNormal.Rotation());
+	MultiRPC_Fire(isHit, hitInfo.ImpactPoint, hitInfo.ImpactNormal.Rotation(), bulletColor);
 }
 
-void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector impactPoint, FRotator decalRot)
+void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector impactPoint, FRotator decalRot, FLinearColor bulletColor)
 {	
 	if (isHit)
 	{
-		//hitInfo.ImpactNormal Ãæµ¹À§Ä¡ÀÇ ·ÎÅ×ÀÌ¼Ç°ªÀ» FVector·Î ¹İÈ¯ÇÕ´Ï´Ù.
+		//hitInfo.ImpactNormal ì¶©ëŒìœ„ì¹˜ì˜ ë¡œí…Œì´ì…˜ê°’ì„ FVectorë¡œ ë°˜í™˜í•©ë‹ˆë‹¤.
 		//FVector in = hitInfo.ImpactNormal;
 
-		//Ãæµ¹°á°úÀÇ ³ë¸»°ªÀ» ·ÎÅ×ÀÌ¼ÇÀ¸·Î Çüº¯È¯
+		//ì¶©ëŒê²°ê³¼ì˜ ë…¸ë§ê°’ì„ ë¡œí…Œì´ì…˜ìœ¼ë¡œ í˜•ë³€í™˜
 		//hitInfo.ImpactNormal.Rotation();
 		FRotator rot = impactPoint.Rotation();
 		rot = decalRot;
 
-		//½ºÆù µ¥Ä®ÀÇ ¾îÅ×Ä¡ÀÇ ¸Å°³º¯¼ö
+		//ìŠ¤í° ë°ì¹¼ì˜ ì–´í…Œì¹˜ì˜ ë§¤ê°œë³€ìˆ˜
 		/*UDecalComponent* UGameplayStatics::SpawnDecalAttached(class UMaterialInterface* DecalMaterial, FVector DecalSize, class USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, EAttachLocation::Type LocationType, float LifeSpan)*/
 
 		//UGameplayStatics::SpawnDecalAttached(pistolPaint,FVector(10) params,);
-		//½ºÆù¾×ÅÍ (À§Ä¡, Å¸ÀÔ, Å©±â, À§Ä¡, ¹æÇâ, ½Ã°£(0=¹«Á¦ÇÑ))
+		//ìŠ¤í°ì•¡í„° (ìœ„ì¹˜, íƒ€ì…, í¬ê¸°, ìœ„ì¹˜, ë°©í–¥, ì‹œê°„(0=ë¬´ì œí•œ))
 		//->SetSortOrder(order);
-		//->SetSortOrder(order); ¼Â ¼ÒÆ®¿À´õ¸¦ ÅëÇØ¼­ ·¹ÀÌ¾î¸¦ ÃÖ»óÀ§·Î ¿Ã¸³´Ï´Ù.
-		// order++; ¿À´õ¸¦ ´©ÀûÇÕ´Ï´Ù.  
+		//->SetSortOrder(order); ì…‹ ì†ŒíŠ¸ì˜¤ë”ë¥¼ í†µí•´ì„œ ë ˆì´ì–´ë¥¼ ìµœìƒìœ„ë¡œ ì˜¬ë¦½ë‹ˆë‹¤.
+		// order++; ì˜¤ë”ë¥¼ ëˆ„ì í•©ë‹ˆë‹¤.  
 
 		//pbn = scale
 		//bsc = decalsize FVector(50)
 		//rot = hitInfo.ImpactNormal.Rotation();
-		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), pistolpaintArray[pbn], FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
+		//UMaterialInstanceDynamic* 
+		mat = UMaterialInstanceDynamic::Create(pistolpaintArray[pbn], this);
+		mat->SetVectorParameterValue(FName(TEXT("Param")), bulletColor);
+		//illegal indirectionUE_LOG(LogTemp, Warning, TEXT("%s"), *color.ToString());
+		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), mat, FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
 		order++;
+
 
 		//UE_LOG(LogTemp, Warning, TEXT("Spawn Decal"));
 
-		//Ãæµ¹½Ã Æø¹ß È¿°ú ÁÖÀÚ.
+		//ì¶©ëŒì‹œ í­ë°œ íš¨ê³¼ ì£¼ì.
 		//UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, FRotator::ZeroRotator, true);
+		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), pistolEffect, hitInfo.ImpactPoint, rot, FVector(1.0f), true);
 	}
 
-	// ÃÑ ½î´Â ¾Ö´Ï¸ŞÀÌ¼Ç ½ÇÇà
+	// ì´ ì˜ëŠ” ì• ë‹ˆë©”ì´ì…˜ ì‹¤í–‰
 	//PlayAnimMontage(pistolMontage, 2.0f, FName(TEXT("Fire")));
 }
 
@@ -454,7 +463,7 @@ void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector i
 void APaintingGenieCharacter::SetBulletColor()
 {
 	//Script/Engine.Material'/Game/BluePrint/re/circle/M_REDCC.M_REDCC
-	//»ı¼ºÀÚ¿¡¼­¸¸ °¡´ÉÇÏ±â ¶§¹®¿¡ ÃÑ¾ËÀ» ¹è¿­·Î ³Ö¾î¼­ ÇÏÀÚ.
+	//ìƒì„±ìì—ì„œë§Œ ê°€ëŠ¥í•˜ê¸° ë•Œë¬¸ì— ì´ì•Œì„ ë°°ì—´ë¡œ ë„£ì–´ì„œ í•˜ì.
 	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
 
 	if (tempRed.Succeeded())
@@ -515,7 +524,7 @@ void APaintingGenieCharacter::MultiRPC_SetBulletColor_Implementation()
 
 void APaintingGenieCharacter::afterBulletColor()
 {	
-	//pbn°ªÀÌ 0ÀÌ¸é Ä«¿îÆ®ÀÇ ³ª¸ÓÁö °ªÀ¸·Î ¹Ş´Â´Ù.
+	//pbnê°’ì´ 0ì´ë©´ ì¹´ìš´íŠ¸ì˜ ë‚˜ë¨¸ì§€ ê°’ìœ¼ë¡œ ë°›ëŠ”ë‹¤.
 	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
 	
 	ServerRPC_afterBulletColor();
@@ -525,7 +534,7 @@ void APaintingGenieCharacter::afterBulletColor()
 
 void APaintingGenieCharacter::ServerRPC_afterBulletColor_Implementation()
 {
-	//pbn°ªÀÌ 0ÀÌ¸é Ä«¿îÆ®ÀÇ ³ª¸ÓÁö °ªÀ¸·Î ¹Ş´Â´Ù.
+	//pbnê°’ì´ 0ì´ë©´ ì¹´ìš´íŠ¸ì˜ ë‚˜ë¨¸ì§€ ê°’ìœ¼ë¡œ ë°›ëŠ”ë‹¤.
 	//pbn = (pbn + 1) % (int32)EPaintColor::COUNT;
 	
 		//pbn = pbn + 1;
@@ -554,7 +563,7 @@ void APaintingGenieCharacter::MultiRPC_afterBulletColor_Implementation()
 
 void APaintingGenieCharacter::beforeBulletColor()
 {
-	//pbn -1À» ÇÏ¸é Ä«¿îÆ®ÀÇ ³ª¸ÓÁö¸¦ °ªÀ¸·Î ¹Ş´Â´Ù.
+	//pbn -1ì„ í•˜ë©´ ì¹´ìš´íŠ¸ì˜ ë‚˜ë¨¸ì§€ë¥¼ ê°’ìœ¼ë¡œ ë°›ëŠ”ë‹¤.
 	//pbn = (pbn -1 + (int32)EPaintColor::COUNT) % (int32)EPaintColor::COUNT;
 	/*pbn = pbn - 1;
 
@@ -617,7 +626,7 @@ void APaintingGenieCharacter::ServerRPC_bulletScaleDown_Implementation()
 
 void APaintingGenieCharacter::MultiRPC_bulletScaleDown_Implementation()
 {
-	//¸¸¾à 0º¸´Ù ÀÛ°Å³ª °°À¸¸é ¸®ÅÏ
+	//ë§Œì•½ 0ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ìœ¼ë©´ ë¦¬í„´
 	if (BSC.Length() <= 0) return;
 	BSC = BSC - 1;
 
@@ -637,13 +646,13 @@ void APaintingGenieCharacter::SetGazePointer()
 	if (tempGaze.Succeeded())
 	{
 		gazePointer->SetStaticMesh(tempGaze.Object);
-		//ÀÎµ¦½º¹øÈ£, ¸ÓÆ¼¸®¾ó
+		//ì¸ë±ìŠ¤ë²ˆí˜¸, ë¨¸í‹°ë¦¬ì–¼
 		//gazePointer->SetMaterial(0, mateGaze.Object);
 	}
 	ConstructorHelpers::FObjectFinder<UMaterial>mateGaze(TEXT("/ Script / Engine.Material'/Game/BluePrint/re/gazepointer/M_GazePointer.M_GazePointer'"));
 	if (mateGaze.Succeeded())
 	{	
-		//ÀÎµ¦½º¹øÈ£, ¸ÓÆ¼¸®¾ó
+		//ì¸ë±ìŠ¤ë²ˆí˜¸, ë¨¸í‹°ë¦¬ì–¼
 		gazePointer->SetMaterial(0, mateGaze.Object);
 	}
 
@@ -653,7 +662,7 @@ void APaintingGenieCharacter::SetGazePointer()
 
 void APaintingGenieCharacter::GazePointer()
 {
-	//ÃÑÀ» Àâ¾Ò´Ï?
+	//ì´ì„ ì¡ì•˜ë‹ˆ?
 	if (closestPistol)
 	{
 		FHitResult hitInfo;
@@ -678,8 +687,53 @@ void APaintingGenieCharacter::GazePointer()
 			gazePointer->SetVisibility(false);
 		}
 		//FVector calcSize = FMath::Lerp(FVector(minSize), FVector(maxSize), rate);
-		//ÃÑÀ» Àâ¾Ò´Ù¸é Ãâ·Â
+		//ì´ì„ ì¡ì•˜ë‹¤ë©´ ì¶œë ¥
 		//UE_LOG(LogTemp, Warning,TEXT("Grab pistol"))	
+	}
+	
+}
+
+void APaintingGenieCharacter::Remove()
+{
+	FHitResult hitInfo;
+	FVector startPos = FollowCamera->GetComponentLocation();
+	FVector endPos = startPos + FollowCamera->GetForwardVector() * maxSight;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
+	
+	//ë¼ì¸íŠ¸ë ˆì´ìŠ¤ ë””ë²„ê·¸
+	//DrawDebugLine(GetWorld(), startPos, endPos, FColor::Red, false, 2.0f, 0, 1.0f);
+
+
+	//ìŠ¤í°ë°ì¹¼ ë¡œì¼€ì´ì…˜ 
+	/*UGameplayStatics::SpawnDecalAtLocation(GetWorld(), mat, FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
+	order++;*/
+
+	if (isHit)
+	{	
+		FString getDecalName = hitInfo.GetActor()->GetName();
+		if(getDecalName.Contains(TEXT("Decal"),ESearchCase::IgnoreCase))
+		{ 
+		hitInfo.GetComponent()->DestroyComponent();
+		
+		UE_LOG(LogTemp, Warning, TEXT("Destroy Component"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No Decal NAME"));
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("Remove actor %s"), *hitInfo.GetActor()->GetName());
+
+			//UE_LOG(LogTemp, Warning, TEXT("Remove actor %s"), hitInfo.GetComponent()->GetMaterial(0));
+
+		
+		//UE_LOG(LogTemp, Warning, TEXT("Remove params %s"), *params.ToString());
+		//mat = hitInfo.Component()->GetMaterial(0);
+
+		//UE_LOG(LogTemp, Warning, TEXT("ADT"));
+
+
 	}
 	
 }
