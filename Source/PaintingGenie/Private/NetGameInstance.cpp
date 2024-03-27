@@ -6,7 +6,8 @@
 #include <OnlineSessionSettings.h>
 #include <Interfaces/OnlineSessionInterface.h>
 #include <Online/OnlineSessionNames.h>
-#include "MoviePlayer.h"
+//이거 파일이 없는데 뭔지 잘 모르겠음.
+//#include "MoviePlayer.h"
 
 void UNetGameInstance::Init()
 {
