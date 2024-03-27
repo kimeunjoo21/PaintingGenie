@@ -15,7 +15,7 @@ void UBulletColorPickerWidget::NativeConstruct()
 
 	//UButton 인클루드
 	Btn_colorPickMenu->OnClicked.AddDynamic(this, &UBulletColorPickerWidget::resizeWidget);
-	colorwheel->OnValueChanegX.AddDynamic(this, &UBulletColorPickerWidget::ChanegeColorWheel);
+	//colorwheel->OnValueChanegX.AddDynamic(this, &UBulletColorPickerWidget::ChanegeColorWheel);
 }
 
 void UBulletColorPickerWidget::resizeWidget()

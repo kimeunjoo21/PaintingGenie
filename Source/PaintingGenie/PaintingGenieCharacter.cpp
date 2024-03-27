@@ -386,11 +386,11 @@ void APaintingGenieCharacter::MultiRPC_DetachPistol_Implementation()
 
 void APaintingGenieCharacter::Fire()
 {
-	ServerRPC_Fire();
+	ServerRPC_Fire(color);
 		
 }
 
-void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
+void APaintingGenieCharacter::ServerRPC_Fire_Implementation(FLinearColor bulletColor)
 {
 	//Fire()를 가져오자.
 
@@ -412,10 +412,10 @@ void APaintingGenieCharacter::ServerRPC_Fire_Implementation()
 	bool isHit = GetWorld()->LineTraceSingleByChannel(hitInfo, startPos, endPos, ECollisionChannel::ECC_Visibility, params);
 
 
-	MultiRPC_Fire(isHit, hitInfo.ImpactPoint, hitInfo.ImpactNormal.Rotation());
+	MultiRPC_Fire(isHit, hitInfo.ImpactPoint, hitInfo.ImpactNormal.Rotation(), bulletColor);
 }
 
-void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector impactPoint, FRotator decalRot)
+void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector impactPoint, FRotator decalRot, FLinearColor bulletColor)
 {	
 	if (isHit)
 	{
@@ -441,7 +441,7 @@ void APaintingGenieCharacter::MultiRPC_Fire_Implementation(bool isHit, FVector i
 		//rot = hitInfo.ImpactNormal.Rotation();
 		//UMaterialInstanceDynamic* 
 		mat = UMaterialInstanceDynamic::Create(pistolpaintArray[pbn], this);
-		mat->SetVectorParameterValue(FName(TEXT("Param")), color);
+		mat->SetVectorParameterValue(FName(TEXT("Param")), bulletColor);
 		//illegal indirectionUE_LOG(LogTemp, Warning, TEXT("%s"), *color.ToString());
 		UGameplayStatics::SpawnDecalAtLocation(GetWorld(), mat, FVector(BSC), impactPoint, rot, 0)->SetSortOrder(order);
 		order++;
