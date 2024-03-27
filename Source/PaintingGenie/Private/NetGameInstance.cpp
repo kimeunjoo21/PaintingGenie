@@ -119,7 +119,7 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 			UE_LOG(LogTemp, Warning, TEXT("%d name : %s, count : %d"), i, *roomName,
 				si.Session.NumOpenPublicConnections);
 
-
+			
 			// 세션 정보 ---> String으로 
 			// 세션의 최대 인원
 			int32 maxPlayer = si.Session.NumOpenPublicConnections;
