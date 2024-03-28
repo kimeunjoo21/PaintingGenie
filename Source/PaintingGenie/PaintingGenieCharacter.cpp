@@ -21,7 +21,14 @@
 #include "Runtime/Engine/Classes/Materials/Material.h"
 //프레임워크 인클루드, 
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/Actor.h>
+//머티리얼 다이나믹
 #include <../../../../../../../Source/Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h>
+//투표 액터
+#include "VoteActor.h"
+//플레이어 컨트롤러
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerController.h>
+//매스 라이브러리
+#include "Kismet/KismetMathLibrary.h"
 
 
 
@@ -136,20 +143,19 @@ void APaintingGenieCharacter::Tick(float DeltaSeconds)
 void APaintingGenieCharacter::PrintNetLog()
 {
 	// Connection 상태
-	FString conStr = GetNetConnection() != nullptr ? TEXT("Valid Connect") : TEXT("InValid Connect");
+	//FString conStr = GetNetConnection() != nullptr ? TEXT("Valid Connect") : TEXT("InValid Connect");
 	// 나의 주인 Actor
-	FString ownerStr = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
+	//FString ownerStr = GetOwner() != nullptr ? GetOwner()->GetName() : TEXT("No Owner");
 	// Role
 	// ROLE_Authority : 모든 권한을 다 갖고 있다 (로직 구현)
 	// ROLE_AutonomousProxy : 제어 (Input) 만 가능하다.
 	// ROLE_SimulatedProxy : 보기만 (시뮬레이션만) 가능한다.
-	FString localRoleStr = UEnum::GetValueAsString<ENetRole>(GetLocalRole());
-	FString remoteRoleStr = UEnum::GetValueAsString<ENetRole>(GetRemoteRole());
+	//FString localRoleStr = UEnum::GetValueAsString<ENetRole>(GetLocalRole());
+	//FString remoteRoleStr = UEnum::GetValueAsString<ENetRole>(GetRemoteRole());
 
-	FString log = FString::Printf(TEXT("Connection : %s\nOwner Name : %s\nLocalRole : %s\nRemoteRole : %s"),
-		*conStr, *ownerStr, *localRoleStr, *remoteRoleStr);
+	//FString log = FString::Printf(TEXT("Connection : %s\nOwner Name : %s\nLocalRole : %s\nRemoteRole : %s"), *conStr, *ownerStr, *localRoleStr, *remoteRoleStr);
 
-	DrawDebugString(
+	/*DrawDebugString(
 		GetWorld(),
 		GetActorLocation() + FVector::UpVector * 100,
 		log,
@@ -157,7 +163,7 @@ void APaintingGenieCharacter::PrintNetLog()
 		FColor::Yellow,
 		0,
 		true,
-		1.0);
+		1.0);*/
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -203,6 +209,11 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Started, this, &APaintingGenieCharacter::bulletScaleDown);
 		EnhancedInputComponent->BindAction(bulletScaleDownValue, ETriggerEvent::Triggered, this, &APaintingGenieCharacter::bulletScaleDown);
 		UE_LOG(LogTemp, Warning, TEXT("bulletScaleDownValue"));
+		
+		//액터를 소환하자
+		EnhancedInputComponent->BindAction(spawnVoteActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::SpawnVoteActor);
+		
+		
 		//액터를 삭제
 		EnhancedInputComponent->BindAction(removeBulletActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::Remove);
 
@@ -464,12 +475,12 @@ void APaintingGenieCharacter::SetBulletColor()
 {
 	//Script/Engine.Material'/Game/BluePrint/re/circle/M_REDCC.M_REDCC
 	//생성자에서만 가능하기 때문에 총알을 배열로 넣어서 하자.
-	ConstructorHelpers::FObjectFinder<UMaterial>tempRed(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_REDCC.M_REDCC'"));
+	ConstructorHelpers::FObjectFinder<UMaterial>tempColorPicker(TEXT("/Script/Engine.Material'/Game/BluePrint/re/paintBullet/M_ColorPickerBullet.M_ColorPickerBullet'"));
 
-	if (tempRed.Succeeded())
+	if (tempColorPicker.Succeeded())
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("Set_Color"));
-		pistolpaintArray.Add(tempRed.Object);
+		pistolpaintArray.Add(tempColorPicker.Object);
 
 	}
 
@@ -693,6 +704,63 @@ void APaintingGenieCharacter::GazePointer()
 	
 }
 
+void APaintingGenieCharacter::SpawnVoteActor()
+{
+
+	// APlayerController 가져오자
+	//APlayerController* playerController = Cast<APlayerController>(GetController());
+
+	//DeprojectMousePositionToWorld 구조
+	//bool APlayerController::DeprojectMousePositionToWorld(FVector & WorldLocation, FVector & WorldDirection) const
+
+	//마오스 포지션벡터 변수 세팅
+	FVector mousePosition;
+	FVector mouseDirection;
+	
+	//카메라 타켓 암값을 받을 변수
+	float taLength;
+	//스폰될 위치를 받을 변수
+	FVector makeLocation;
+	FRotator makeRotation;
+	
+	//플레이어 컨트롤 가져오기
+	APlayerController* pc = Cast<APlayerController>(GetController());
+
+	//마우스 포지션 변환
+	pc->DeprojectMousePositionToWorld(mousePosition, mouseDirection);
+	
+	 //UE_LOG(LogTemp, Warning, TEXT("position %f, direction %f"), mousePosition.X, mouseDirection.X);
+
+	 //스프링암의 카메라 붐을 담을 변수
+	 USpringArmComponent* sac = Cast<USpringArmComponent>(GetCameraBoom());
+	 //타겟암의 렝스값을 담을 변수
+	 taLength = sac->TargetArmLength;
+
+	 //UE_LOG(LogTemp, Warning, TEXT("taLength %f"), taLength);
+
+	 //스폰될 위치 벡터
+	 makeLocation = mousePosition+(mouseDirection*(taLength + 200.0f));
+
+
+	//스폰될 방향 벡터
+	makeRotation = sac->GetTargetRotation();
+
+	//UE_LOG(LogTemp, Warning, TEXT("spawn location %f, rotarion %f "), makeLocation, makeRotation);
+
+
+	//static ENGINE_API FTransform MakeTransform(FVector Location, FRotator Rotation, FVector Scale = FVector(1, 1, 1));
+	UKismetMathLibrary::MakeTransform(makeLocation, makeRotation, FVector(0.2));
+
+	//스폰엑터구조
+	//SpawnActor(UClass * Class, FVector const& Location, FRotator const& Rotation, const FActorSpawnParameters & SpawnParameters = FActorSpawnParameters())
+
+	GetWorld()->SpawnActor<AActor>(spawnFactory, makeLocation, makeRotation);
+
+	//UE_LOG(LogTemp, Warning, TEXT("spawn actor, location %f, rotarion %f "), makeLocation, makeRotation);
+
+}
+
+
 void APaintingGenieCharacter::Remove()
 {
 	FHitResult hitInfo;
@@ -732,6 +800,7 @@ void APaintingGenieCharacter::Remove()
 		//mat = hitInfo.Component()->GetMaterial(0);
 
 		//UE_LOG(LogTemp, Warning, TEXT("ADT"));
+
 
 
 	}

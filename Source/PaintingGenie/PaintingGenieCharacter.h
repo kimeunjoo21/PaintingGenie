@@ -76,17 +76,16 @@ class APaintingGenieCharacter : public ACharacter
 	//머티리얼의 크기를 바꾸자.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* bulletScaleDownValue;
+	//액트를 스폰하자
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* spawnVoteActor;
 	//액터를지우자
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* removeBulletActor;
 
-
-
-
 public:
 	APaintingGenieCharacter();
 	
-
 protected:
 
 	/** Called for movement input */
@@ -185,13 +184,13 @@ public:
 	class UStaticMeshComponent* gazePointer;
 	void GazePointer();
 
+	UFUNCTION()
+	void SpawnVoteActor();
+	
+	UFUNCTION()
 	void Remove();
 
-
-
-
-
-
+//인풋 세팅
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -252,8 +251,12 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	FLinearColor color = FLinearColor(1, 0, 0, 1);
 
+	//머티리얼 다이나믹 설정
 	class UMaterialInstanceDynamic* mat;
 
+	//액터를 가져와서 소환하자
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AVoteActor> spawnFactory;
 
 	
 	
