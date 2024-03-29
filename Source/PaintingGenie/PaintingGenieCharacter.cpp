@@ -789,6 +789,8 @@ void APaintingGenieCharacter::SetGenieLocation()
 
 	//저장된 위치로 이동
 	SetActorLocation(res);
+
+	UE_LOG(LogTemp, Warning, TEXT("get loc %f"), res);
 }
 
 void APaintingGenieCharacter::Remove()
