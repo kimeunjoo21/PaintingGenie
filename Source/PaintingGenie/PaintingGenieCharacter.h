@@ -76,12 +76,23 @@ class APaintingGenieCharacter : public ACharacter
 	//머티리얼의 크기를 바꾸자.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* bulletScaleDownValue;
-	//액트를 스폰하자
+	//액터를 스폰하자
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* spawnVoteActor;
+	
+	//플레이어의 위치를 스타트 위치로 이동
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SetPlayerLocationStartPosition;
+	
+	
+	
+	
+	
 	//액터를지우자
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* removeBulletActor;
+
+
 
 public:
 	APaintingGenieCharacter();
@@ -188,6 +199,10 @@ public:
 	void SpawnVoteActor();
 	UFUNCTION(Server, Reliable)
 	void ServerRPC_SpawnVoteActor(FVector pos, FRotator rot);
+
+	UFUNCTION()
+	void SetGenieLocation();
+
 
 	UFUNCTION()
 	void Remove();
