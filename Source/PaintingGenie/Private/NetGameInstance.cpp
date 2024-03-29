@@ -40,6 +40,8 @@ void UNetGameInstance::CreateMySession(FString roomName, int32 maxPlayer)
 	sessionSettings.bUseLobbiesIfAvailable = true;
 	// 내가 게임 중인가?
 	sessionSettings.bAllowJoinViaPresence = true;
+	sessionSettings.bUsesPresence = true;
+	sessionSettings.bAllowJoinInProgress = true;
 
 	// 인원 수
 	sessionSettings.NumPublicConnections = maxPlayer;
