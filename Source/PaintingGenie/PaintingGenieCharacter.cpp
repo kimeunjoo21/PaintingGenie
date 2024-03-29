@@ -29,6 +29,10 @@
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerController.h>
 //매스 라이브러리
 #include "Kismet/KismetMathLibrary.h"
+#include <../../../../../../../Source/Runtime/UMG/Public/Blueprint/UserWidget.h>
+
+// Tab 버튼 눌렀을 때 메뉴 위젯
+#include "TabButtonMenuWidget.h"
 
 
 
@@ -83,9 +87,7 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	//게이지 포인터를 세팅하자.
 	SetGazePointer();
 
-	
-
-
+	TabButtonMenuWidget = UTabButtonMenuWidget::StaticClass();
 
 }
 
@@ -217,7 +219,8 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		//액터를 삭제
 		EnhancedInputComponent->BindAction(removeBulletActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::Remove);
 
-
+		// Tab키를 눌러 메뉴 화면 열고 닫기
+		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::ViewTabMenu);
 
 	}
 	else
@@ -806,3 +809,27 @@ void APaintingGenieCharacter::Remove()
 	}
 	
 }
+
+void APaintingGenieCharacter::ViewTabMenu()
+{
+	UE_LOG(LogTemp, Warning, TEXT("TabButton을 눌렀다!"));
+	if (!TabButtonMenuWidgetInstance)
+	{
+		// (만약 이미 생성되지 않았더라면) TabButtonMenuWidget의 instance를 생성 
+		TabButtonMenuWidgetInstance = CreateWidget<UTabButtonMenuWidget>(GetWorld(), TabButtonMenuWidget);
+		if (TabButtonMenuWidgetInstance)
+		{
+			// Add widget to viewport
+			TabButtonMenuWidgetInstance->AddToViewport();
+		}
+	}
+	else
+	{
+		// (만약 이미 생성되었더라면) Remove widget from viewport
+		TabButtonMenuWidgetInstance->RemoveFromViewport(); //RemovefromViewport() 함수 deprecated
+		TabButtonMenuWidgetInstance = nullptr;
+	}
+
+
+}
+

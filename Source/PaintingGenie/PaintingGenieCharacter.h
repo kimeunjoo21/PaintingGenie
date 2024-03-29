@@ -83,6 +83,10 @@ class APaintingGenieCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* removeBulletActor;
 
+	// Tab 키를 눌러 메뉴탭을 열고 닫자
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TabAction;
+
 public:
 	APaintingGenieCharacter();
 	
@@ -189,6 +193,14 @@ public:
 	
 	UFUNCTION()
 	void Remove();
+
+	UFUNCTION()
+	void ViewTabMenu();
+
+    UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+    TSubclassOf<class UTabButtonMenuWidget> TabButtonMenuWidget;
+
+	UTabButtonMenuWidget* TabButtonMenuWidgetInstance;
 
 //인풋 세팅
 protected:
