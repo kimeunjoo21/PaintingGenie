@@ -764,7 +764,7 @@ void APaintingGenieCharacter::ServerRPC_SpawnVoteActor_Implementation(FVector po
 {
 	//spawnFactory 멤버 변수 임으로 2개의 변수만 매개 변수로 가져오자.
 	GetWorld()->SpawnActor<AActor>(spawnFactory, pos, rot);
-	UKismetSystemLibrary::Delay(GetWorld(), 10.0f,);
+	//UKismetSystemLibrary::Delay(GetWorld(), 10.0f,);
 }
 
 
