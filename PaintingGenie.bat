@@ -1,1 +1,1 @@
-"C:\Program Files\Epic Games\UE_5.3\Engine\Binaries\Win64\UnrealEditor.exe" "C:\Users\hertz\Documents\GitHub\PaintingGenie\PaintingGenie.uproject" -game -log -ResX=600 -ResY=400 -WinX=10 -WinY=100
+"C:\Program Files\Epic Games\UE_5.3\Engine\Binaries\Win64\UnrealEditor.exe" "C:\UE_Projects\PaintingGenie\PaintingGenie.uproject" -game -log -ResX=600 -ResY=400 -WinX=10 -WinY=100

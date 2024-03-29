@@ -3,11 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MoviePlayer.h"
 #include "Engine/GameInstance.h"
 #include "Runtime/UMG/Public/UMG.h"
 #include "Slate.h"
 #include <Interfaces/OnlineSessionInterface.h>
+//파일이 없고 에러발생, 빌드문제로 주석처리함.
+//#include "MoviePlayer.h"
 #include "NetGameInstance.generated.h"
 
 /**

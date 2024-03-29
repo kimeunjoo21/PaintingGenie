@@ -6,7 +6,8 @@
 #include <OnlineSessionSettings.h>
 #include <Interfaces/OnlineSessionInterface.h>
 #include <Online/OnlineSessionNames.h>
-#include "MoviePlayer.h"
+//이거 파일이 없는데 뭔지 잘 모르겠음.
+//#include "MoviePlayer.h"
 
 void UNetGameInstance::Init()
 {
@@ -39,6 +40,8 @@ void UNetGameInstance::CreateMySession(FString roomName, int32 maxPlayer)
 	sessionSettings.bUseLobbiesIfAvailable = true;
 	// 내가 게임 중인가?
 	sessionSettings.bAllowJoinViaPresence = true;
+	sessionSettings.bUsesPresence = true;
+	sessionSettings.bAllowJoinInProgress = true;
 
 	// 인원 수
 	sessionSettings.NumPublicConnections = maxPlayer;
@@ -118,7 +121,7 @@ void UNetGameInstance::OnFindSessionComplete(bool bWasSuccessful)
 			UE_LOG(LogTemp, Warning, TEXT("%d name : %s, count : %d"), i, *roomName,
 				si.Session.NumOpenPublicConnections);
 
-
+			
 			// 세션 정보 ---> String으로 
 			// 세션의 최대 인원
 			int32 maxPlayer = si.Session.NumOpenPublicConnections;
