@@ -29,8 +29,10 @@
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerController.h>
 //매스 라이브러리
 #include "Kismet/KismetMathLibrary.h"
-#include <../../../../../../../Source/Editor/UnrealEd/Public/Subsystems/EditorActorSubsystem.h>
-#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerStart.h>
+#include <../../../../../../../Source/Runtime/UMG/Public/Blueprint/UserWidget.h>
+
+// Tab 버튼 눌렀을 때 메뉴 위젯
+#include "TabButtonMenuWidget.h"
 
 
 
@@ -85,9 +87,7 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 	//게이지 포인터를 세팅하자.
 	SetGazePointer();
 
-	
-
-
+	TabButtonMenuWidget = UTabButtonMenuWidget::StaticClass();
 
 }
 
@@ -214,15 +214,13 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		
 		//액터를 소환하자
 		EnhancedInputComponent->BindAction(spawnVoteActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::SpawnVoteActor);
-
-		//내 위치를 이동시키자
-		EnhancedInputComponent->BindAction(SetPlayerLocationStartPosition, ETriggerEvent::Started, this, &APaintingGenieCharacter::SetGenieLocation);
 		
 		
 		//액터를 삭제
 		EnhancedInputComponent->BindAction(removeBulletActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::Remove);
 
-
+		// Tab키를 눌러 메뉴 화면 열고 닫기
+		EnhancedInputComponent->BindAction(TabAction, ETriggerEvent::Started, this, &APaintingGenieCharacter::ViewTabMenu);
 
 	}
 	else
@@ -710,88 +708,61 @@ void APaintingGenieCharacter::GazePointer()
 }
 
 void APaintingGenieCharacter::SpawnVoteActor()
-{	
-	//목표	
-	//각 플레이어의 마우스포지션 위치에 액터를 생상하고, 생성한 액터를 동기화 하자. 
-	//마오스 포지션벡터 변수 세팅
-	FVector mousePosition;
-	FVector mouseDirection;
-
-	//카메라 타켓 암값을 받을 변수
-	float taLength;
-
-	//스폰될 위치를 받을 변수
-	FVector makeLocation;
-	FRotator makeRotation;
-
-	// APlayerController 구조
-	//APlayerController* playerController = Cast<APlayerController>(GetController());
+{
 
 	// APlayerController 가져오자
-	APlayerController* pc = Cast<APlayerController>(GetController());
+	//APlayerController* playerController = Cast<APlayerController>(GetController());
 
 	//DeprojectMousePositionToWorld 구조
 	//bool APlayerController::DeprojectMousePositionToWorld(FVector & WorldLocation, FVector & WorldDirection) const
 
+	//마오스 포지션벡터 변수 세팅
+	FVector mousePosition;
+	FVector mouseDirection;
+	
+	//카메라 타켓 암값을 받을 변수
+	float taLength;
+	//스폰될 위치를 받을 변수
+	FVector makeLocation;
+	FRotator makeRotation;
+	
+	//플레이어 컨트롤 가져오기
+	APlayerController* pc = Cast<APlayerController>(GetController());
+
 	//마우스 포지션 변환
 	pc->DeprojectMousePositionToWorld(mousePosition, mouseDirection);
+	
+	 //UE_LOG(LogTemp, Warning, TEXT("position %f, direction %f"), mousePosition.X, mouseDirection.X);
 
-	//UE_LOG(LogTemp, Warning, TEXT("position %f, direction %f"), mousePosition.X, mouseDirection.X);
+	 //스프링암의 카메라 붐을 담을 변수
+	 USpringArmComponent* sac = Cast<USpringArmComponent>(GetCameraBoom());
+	 //타겟암의 렝스값을 담을 변수
+	 taLength = sac->TargetArmLength;
 
-	//스프링암의 카메라 붐을 담을 변수
-	USpringArmComponent* sac = Cast<USpringArmComponent>(GetCameraBoom());
+	 //UE_LOG(LogTemp, Warning, TEXT("taLength %f"), taLength);
 
-	//타겟암의 렝스값을 담을 변수
-	taLength = sac->TargetArmLength;
+	 //스폰될 위치 벡터
+	 makeLocation = mousePosition+(mouseDirection*(taLength + 200.0f));
 
-	//UE_LOG(LogTemp, Warning, TEXT("taLength %f"), taLength);
-
-	//스폰될 위치 벡터
-	makeLocation = mousePosition + (mouseDirection * (taLength + 200.0f));
 
 	//스폰될 방향 벡터
 	makeRotation = sac->GetTargetRotation();
 
 	//UE_LOG(LogTemp, Warning, TEXT("spawn location %f, rotarion %f "), makeLocation, makeRotation);
 
+
 	//static ENGINE_API FTransform MakeTransform(FVector Location, FRotator Rotation, FVector Scale = FVector(1, 1, 1));
-	
-	//UKismetMathLibrary::MakeTransform(makeLocation, makeRotation, FVector(0.2));
-	
-	//액터의 리플리케이트를 설정했다면 멀티 RPC를 하지 않아도 됨.
-	ServerRPC_SpawnVoteActor(makeLocation, makeRotation);
+	UKismetMathLibrary::MakeTransform(makeLocation, makeRotation, FVector(0.2));
+
+	//스폰엑터구조
+	//SpawnActor(UClass * Class, FVector const& Location, FRotator const& Rotation, const FActorSpawnParameters & SpawnParameters = FActorSpawnParameters())
+
+	GetWorld()->SpawnActor<AActor>(spawnFactory, makeLocation, makeRotation);
+
+	//UE_LOG(LogTemp, Warning, TEXT("spawn actor, location %f, rotarion %f "), makeLocation, makeRotation);
 
 }
 
-
-void APaintingGenieCharacter::ServerRPC_SpawnVoteActor_Implementation(FVector pos, FRotator rot)
-{
-	//spawnFactory 멤버 변수 임으로 2개의 변수만 매개 변수로 가져오자.
-	GetWorld()->SpawnActor<AActor>(spawnFactory, pos, rot);
-	//UKismetSystemLibrary::Delay(GetWorld(), 10.0f,);
-
-	
-
-
-}
-
-
-
-void APaintingGenieCharacter::SetGenieLocation()
-{
-	//플레이어 스트타 위치의 스태틱 클래스를 가져오자
-	AActor* stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
-
-	//스타트위치를 저장하자.
-	FVector res = stl->GetActorLocation();
-
-	//UE_LOG(LogTemp, Warning, TEXT("get loc %f"), res.X);
-
-	//저장된 위치로 이동
-	SetActorLocation(res);
-
-	UE_LOG(LogTemp, Warning, TEXT("get loc %f"), res);
-}
 
 void APaintingGenieCharacter::Remove()
 {
@@ -838,3 +809,27 @@ void APaintingGenieCharacter::Remove()
 	}
 	
 }
+
+void APaintingGenieCharacter::ViewTabMenu()
+{
+	UE_LOG(LogTemp, Warning, TEXT("TabButton을 눌렀다!"));
+	if (!TabButtonMenuWidgetInstance)
+	{
+		// (만약 이미 생성되지 않았더라면) TabButtonMenuWidget의 instance를 생성 
+		TabButtonMenuWidgetInstance = CreateWidget<UTabButtonMenuWidget>(GetWorld(), TabButtonMenuWidget);
+		if (TabButtonMenuWidgetInstance)
+		{
+			// Add widget to viewport
+			TabButtonMenuWidgetInstance->AddToViewport();
+		}
+	}
+	else
+	{
+		// (만약 이미 생성되었더라면) Remove widget from viewport
+		TabButtonMenuWidgetInstance->RemoveFromViewport(); //RemovefromViewport() 함수 deprecated
+		TabButtonMenuWidgetInstance = nullptr;
+	}
+
+
+}
+
