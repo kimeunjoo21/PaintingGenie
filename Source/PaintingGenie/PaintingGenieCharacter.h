@@ -186,7 +186,9 @@ public:
 
 	UFUNCTION()
 	void SpawnVoteActor();
-	
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SpawnVoteActor(FVector pos, FRotator rot);
+
 	UFUNCTION()
 	void Remove();
 

@@ -20,9 +20,11 @@ AVoteActor::AVoteActor()
 
 	boxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("box Comp"));
 	SetRootComponent(boxComp);
+	boxComp ->SetCollisionProfileName(TEXT("NoCollision"));
 	
 	smCube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Cube"));
-		smCube->SetupAttachment(RootComponent);
+	smCube -> SetupAttachment(RootComponent);
+	smCube -> SetCollisionProfileName(TEXT("NoCollision"));
 
 
 }
