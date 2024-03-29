@@ -117,7 +117,7 @@ void APaintingGenieCharacter::BeginPlay()
 	for (int32 i = 0; i < allActor.Num(); i++)
 	{
 		//액터의 라벨이 피스톨이라면
-		if (allActor[i]->GetActorLabel().Contains(TEXT("Pistol")))
+		if (allActor[i]->GetActorNameOrLabel().Contains(TEXT("Pistol")))
 		{
 			allPistol.Add(allActor[i]);
 			//UE_LOG(LogTemp, Warning, TEXT("allpistrol"));
