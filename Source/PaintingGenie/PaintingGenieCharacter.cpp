@@ -30,6 +30,9 @@
 //매스 라이브러리
 #include "Kismet/KismetMathLibrary.h"
 #include <../../../../../../../Source/Runtime/UMG/Public/Blueprint/UserWidget.h>
+//플레이어스타트
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerStart.h>
+
 
 // Tab 버튼 눌렀을 때 메뉴 위젯
 #include "TabButtonMenuWidget.h"
@@ -214,6 +217,10 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 		
 		//액터를 소환하자
 		EnhancedInputComponent->BindAction(spawnVoteActor, ETriggerEvent::Started, this, &APaintingGenieCharacter::SpawnVoteActor);
+
+		//내 위치를 이동시키자
+		EnhancedInputComponent->BindAction(SetPlayerLocationStartPosition, ETriggerEvent::Started, this, &APaintingGenieCharacter::SetGenieLocation);
+
 		
 		
 		//액터를 삭제
@@ -763,6 +770,21 @@ void APaintingGenieCharacter::SpawnVoteActor()
 
 }
 
+
+void APaintingGenieCharacter::SetGenieLocation()
+{
+	//플레이어 스트타 위치의 스태틱 클래스를 가져오자
+	AActor* stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
+
+	//스타트위치를 저장하자.
+	FVector res = stl->GetActorLocation();
+
+	//UE_LOG(LogTemp, Warning, TEXT("get loc %f"), res.X);
+
+	//저장된 위치로 이동
+	SetActorLocation(res);
+
+}
 
 void APaintingGenieCharacter::Remove()
 {

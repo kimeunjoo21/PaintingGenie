@@ -79,6 +79,11 @@ class APaintingGenieCharacter : public ACharacter
 	//액트를 스폰하자
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* spawnVoteActor;
+	//내 위치를 스타트 위치로 이동시키자
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* SetPlayerLocationStartPosition;
+
+
 	//액터를지우자
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* removeBulletActor;
@@ -191,6 +196,9 @@ public:
 	UFUNCTION()
 	void SpawnVoteActor();
 	
+	UFUNCTION()
+	void SetGenieLocation();
+
 	UFUNCTION()
 	void Remove();
 
