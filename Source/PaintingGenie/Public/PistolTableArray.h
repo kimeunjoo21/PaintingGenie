@@ -30,9 +30,9 @@ public:
 	TArray<class UChildActorComponent*> pitolTableActorChild;
 
 	UPROPERTY(EditAnywhere, Category = "MySettings|Sources")
-	float tableTerm = 1.0f;
+	float tableTerm = 10.0f;
 
-	UPROPERTY(EditAnywhere, Category = "MySettings|Sources")
+	UPROPERTY(VisibleAnywhere, Category = "MySettings|Sources")
 	TSubclassOf<class APistolTable> pistolTableActor;
 
 };
