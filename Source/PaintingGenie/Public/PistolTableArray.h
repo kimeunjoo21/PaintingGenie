@@ -23,6 +23,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY()
+	TArray<class AActor*> ptaArray;
+
 	UPROPERTY(EditAnywhere, Category = "MySettings|Components")
 	class USceneComponent* rootComp;
 

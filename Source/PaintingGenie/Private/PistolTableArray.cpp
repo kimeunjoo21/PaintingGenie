@@ -16,7 +16,7 @@ APistolTableArray::APistolTableArray()
 	SetRootComponent(rootComp);
 	
 	//UChildActorComponent 인클루드
-	pitolTableActorChild.SetNum(10);
+	ptaArray.SetNum(10);
 
 	//전체 너비 = 건반의 개수 * 건반의 너비 + (건반의 개수 - 1) * 건반 사이의 간격
 	//float entireWidth = pitolTableActorChild.Num() * 10 + (pitolTableActorChild.Num() - 1) * tableTerm;
@@ -38,35 +38,42 @@ APistolTableArray::APistolTableArray()
 		pitolTableActorChild.Add(childPistolTable);
 	}*/
 
-	/*for (int32 i = 0; i < pitolTableActorChild.Num(); i++)
+	for (int32 i = 0; i < ptaArray.Num(); i++)
 	{
 		FString pistolTable = FString::Printf(TEXT("PistolTable_%d"), i + 1);
 		UChildActorComponent* childPistolTable = CreateDefaultSubobject<UChildActorComponent>(FName(pistolTable));
 		childPistolTable->SetupAttachment(RootComponent);
 
-		FVector pisolTableLocation = FVector(0, 20, 0);
+		FVector pisolTableLocation = FVector(0, 30*i, 0);
 		childPistolTable->SetRelativeLocation(pisolTableLocation);
 		pitolTableActorChild.Add(childPistolTable);
-	}*/
+	}
+
+
+
+	//APistolTable 인클루드
+	auto bp_pt = ConstructorHelpers::FClassFinder<AActor>(TEXT("/Script/Engine.Blueprint'/Game/BluePrint/BP_PistolTable.BP_PistolTable_C'"));
+	if (bp_pt.Succeeded())
+	{
+		pistolTableActor = bp_pt.Class;
+	}
+
+	if (pistolTableActor != nullptr)
+	{
+		for (int32 i = 0; i < pitolTableActorChild.Num(); i++)
+		{
+			// Child Actor 방식 - childActorComponent에 생성할 키보드 액터를 할당한다.
+			pitolTableActorChild[i]->SetChildActorClass(pistolTableActor);
+			UE_LOG(LogTemp, Warning, TEXT("set class suc"));
+
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("set class fail"));
+	}
 
 }
-
-//	//APistolTable 인클루드
-//	auto bp_pt = ConstructorHelpers::FClassFinder<APistolTable>(TEXT("/Script/Engine.Blueprint'/Game/BluePrint/BP_PistolTable.BP_PistolTable'"));
-//	if (bp_pt.Succeeded())
-//	{
-//		pistolTableActor = bp_pt.Class;
-//	}
-//
-//	if (pistolTableActor != nullptr)
-//	{
-//		for (int32 i = 0; i < pitolTableActorChild.Num(); i++)
-//		{
-//			// Child Actor 방식 - childActorComponent에 생성할 키보드 액터를 할당한다.
-//			pitolTableActorChild[i]->SetChildActorClass(pistolTableActor);
-//		}
-//	}
-//}
 
 
 // Called when the game starts or when spawned
