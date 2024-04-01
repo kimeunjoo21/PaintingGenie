@@ -214,6 +214,10 @@ public:
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void PossessedBy(AController* NewController) override;
 	
 	// To add mapping context
 	virtual void BeginPlay();
@@ -282,7 +286,7 @@ public:
 public: 
 	UPROPERTY(EditAnywhere)
 	class UWidgetComponent* compName;
-	UPROPERTY()  // nickName UPROPERTY(Replicated) 되어야 하는가?
+	UPROPERTY(Replicated)  // nickName UPROPERTY(Replicated) 되어야 하는가?
 	FString nickName;
 	
 	UFUNCTION()
