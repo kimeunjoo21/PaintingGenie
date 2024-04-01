@@ -67,7 +67,7 @@ void UNetGameInstance::OnCreateSessionComplete(FName SessionName, bool bWasSucce
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OnCreateSessionComplete Success -- %s"), *SessionName.ToString());
 		//   | 수업에서는 Battle Map 으로 이동하기 위해 설정한 코딩 | 아래를 안해도 서버pc는 리슨서버에 접속해 있음
-		GetWorld()->ServerTravel(TEXT("/Game/KEJ/Maps/LV_EJSoul_Slum?listen"));
+		GetWorld()->ServerTravel(TEXT("/Game/KEJ/LV_Soul_Slum?listen"));
 		// GetWorld()->ServerTravel(TEXT("/Game/ThirdPerson/Maps/BattleMap?listen"));
 	}
 	else
