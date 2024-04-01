@@ -20,7 +20,7 @@ void UTitleWidget::NativeConstruct()
 
 	Btn_SinglePlay->OnClicked.AddDynamic(this, &UTitleWidget::StartSingleModeGame);
 	Btn_MultiPlay->OnClicked.AddDynamic(this, &UTitleWidget::GoLobbyMap);
-	Btn_Options->OnClicked.AddDynamic(this, &UTitleWidget::StartSingleModeGame);
+	//Btn_Options->OnClicked.AddDynamic(this, &UTitleWidget::StartSingleModeGame);
 	Btn_Quit->OnClicked.AddDynamic(this, &UTitleWidget::QuitGame);
 
 }

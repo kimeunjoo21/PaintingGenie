@@ -27,7 +27,7 @@ public:
 	class UButton* Btn_MultiPlay;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_Options;
+	class UButton* Btn_GameInfo;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_Quit;
