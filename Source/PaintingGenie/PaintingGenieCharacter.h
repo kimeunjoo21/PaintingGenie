@@ -196,7 +196,7 @@ public:
 	UFUNCTION()
 	void SpawnVoteActor();
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetGenieLocation();
 
 	UFUNCTION()
