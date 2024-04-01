@@ -198,6 +198,12 @@ public:
 	
 	UFUNCTION()
 	void SetGenieLocation();
+	UFUNCTION(Server, Reliable)
+	void ServerRPC_SetGenieLocation();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiRPC_SetGenieLocation();
+	AActor* stl;
+	FVector res;
 
 	UFUNCTION()
 	void Remove();
