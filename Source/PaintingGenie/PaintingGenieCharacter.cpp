@@ -39,6 +39,8 @@
 // 플레이어 닉네임 표기 위젯
 #include "PlayerNickname.h"
 #include <Components/WidgetComponent.h>
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerState.h>
+#include <../../../../../../../Source/Runtime/Engine/Public/Net/UnrealNetwork.h>
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -134,11 +136,6 @@ void APaintingGenieCharacter::BeginPlay()
 		}
 	}
 
-
-
-	//플레이어 스트타 위치의 스태틱 클래스를 가져오자
-	stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
-	
 }
 
 void APaintingGenieCharacter::Tick(float DeltaSeconds)
@@ -261,6 +258,20 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void APaintingGenieCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APaintingGenieCharacter, nickName);
+}
+
+void APaintingGenieCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	nickName = GetPlayerState()->GetPlayerName();
 }
 
 void APaintingGenieCharacter::Move(const FInputActionValue& Value)
@@ -801,31 +812,16 @@ void APaintingGenieCharacter::SpawnVoteActor()
 void APaintingGenieCharacter::SetGenieLocation()
 {
 	//플레이어 스트타 위치의 스태틱 클래스를 가져오자
-	/*stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());*/
+	AActor* stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
 
-	
-	ServerRPC_SetGenieLocation();
-	
-}
-
-void APaintingGenieCharacter::ServerRPC_SetGenieLocation_Implementation()
-{	
-	//SetActorLocation(res);
-
-
-	MultiRPC_SetGenieLocation();
-}
-
-void APaintingGenieCharacter::MultiRPC_SetGenieLocation_Implementation()
-{
 	//스타트위치를 저장하자.
-	res = stl->GetActorLocation();
+	FVector res = stl->GetActorLocation();
+
+	//UE_LOG(LogTemp, Warning, TEXT("get loc %f"), res.X);
+
+	//저장된 위치로 이동
 	SetActorLocation(res);
-	
-	/*res = stl->GetActorLocation();
-	SetActorLocation(res);
-	*/
-	//SetActorLocation(res);
+
 }
 
 void APaintingGenieCharacter::Remove()
