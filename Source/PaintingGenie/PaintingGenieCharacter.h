@@ -278,8 +278,15 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AVoteActor> spawnFactory;
 
+
+public: 
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* compName;
+	UPROPERTY()  // nickName UPROPERTY(Replicated) 되어야 하는가?
+	FString nickName;
 	
-	
+	UFUNCTION()
+	void BillboardPlayerNickName();
 
 };
 

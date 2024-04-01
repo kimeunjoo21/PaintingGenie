@@ -33,10 +33,12 @@
 //플레이어스타트
 #include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerStart.h>
 
-
 // Tab 버튼 눌렀을 때 메뉴 위젯
 #include "TabButtonMenuWidget.h"
 
+// 플레이어 닉네임 표기 위젯
+#include "PlayerNickname.h"
+#include <Components/WidgetComponent.h>
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -92,6 +94,10 @@ APaintingGenieCharacter::APaintingGenieCharacter()
 
 	TabButtonMenuWidget = UTabButtonMenuWidget::StaticClass();
 
+	// 플레이어 머리 위에 표기되는 닉네임
+	compName = CreateDefaultSubobject<UWidgetComponent>(TEXT("NICK_NAME"));
+	compName->SetupAttachment(RootComponent);
+
 }
 
 void APaintingGenieCharacter::BeginPlay()
@@ -140,8 +146,12 @@ void APaintingGenieCharacter::Tick(float DeltaSeconds)
 	//프린트 로그
 	PrintNetLog();
 	
+	BillboardPlayerNickName();
 
-	
+	if (nickName.IsEmpty() == false)
+	{
+		Cast<UPlayerNickname>(compName->GetWidget())->SetNickName(nickName);
+	}
 
 }
 
@@ -169,6 +179,19 @@ void APaintingGenieCharacter::PrintNetLog()
 		0,
 		true,
 		1.0);*/
+}
+
+void APaintingGenieCharacter::BillboardPlayerNickName()
+{
+	AActor* cam = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	// -카메라의 앞방향
+	FVector foward = -cam->GetActorForwardVector();
+	// 카메라의 윗방향
+	FVector up = cam->GetActorUpVector();
+
+	FRotator rot = UKismetMathLibrary::MakeRotFromXZ(foward, up);
+
+	compName->SetWorldRotation(rot);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -848,7 +871,7 @@ void APaintingGenieCharacter::ViewTabMenu()
 	else
 	{
 		// (만약 이미 생성되었더라면) Remove widget from viewport
-		TabButtonMenuWidgetInstance->RemoveFromViewport(); //RemovefromViewport() 함수 deprecated
+		TabButtonMenuWidgetInstance->RemoveFromParent(); //RemovefromViewport() 함수 deprecated
 		TabButtonMenuWidgetInstance = nullptr;
 	}
 
