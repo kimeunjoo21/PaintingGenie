@@ -39,6 +39,8 @@
 // 플레이어 닉네임 표기 위젯
 #include "PlayerNickname.h"
 #include <Components/WidgetComponent.h>
+#include <../../../../../../../Source/Runtime/Engine/Classes/GameFramework/PlayerState.h>
+#include <../../../../../../../Source/Runtime/Engine/Public/Net/UnrealNetwork.h>
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -261,6 +263,19 @@ void APaintingGenieCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void APaintingGenieCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APaintingGenieCharacter, nickName);
+}
+
+void APaintingGenieCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	nickName = GetPlayerState()->GetPlayerName();
 }
 
 void APaintingGenieCharacter::Move(const FInputActionValue& Value)
