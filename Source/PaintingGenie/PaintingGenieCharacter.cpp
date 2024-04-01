@@ -134,6 +134,10 @@ void APaintingGenieCharacter::BeginPlay()
 		}
 	}
 
+
+
+	//플레이어 스트타 위치의 스태틱 클래스를 가져오자
+	stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
 	
 }
 
@@ -797,16 +801,31 @@ void APaintingGenieCharacter::SpawnVoteActor()
 void APaintingGenieCharacter::SetGenieLocation()
 {
 	//플레이어 스트타 위치의 스태틱 클래스를 가져오자
-	AActor* stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
+	/*stl = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());*/
 
+	
+	ServerRPC_SetGenieLocation();
+	
+}
+
+void APaintingGenieCharacter::ServerRPC_SetGenieLocation_Implementation()
+{	
+	//SetActorLocation(res);
+
+
+	MultiRPC_SetGenieLocation();
+}
+
+void APaintingGenieCharacter::MultiRPC_SetGenieLocation_Implementation()
+{
 	//스타트위치를 저장하자.
-	FVector res = stl->GetActorLocation();
-
-	//UE_LOG(LogTemp, Warning, TEXT("get loc %f"), res.X);
-
-	//저장된 위치로 이동
+	res = stl->GetActorLocation();
 	SetActorLocation(res);
-
+	
+	/*res = stl->GetActorLocation();
+	SetActorLocation(res);
+	*/
+	//SetActorLocation(res);
 }
 
 void APaintingGenieCharacter::Remove()
